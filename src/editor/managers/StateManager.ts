@@ -1,6 +1,7 @@
 import type { Editor } from "..";
 
-export interface State {
+export interface EditorState {
+  selection: string[]; // selected object ids
   currentTool: string;
   mode: Mode;
   strokeColor: string;
@@ -9,31 +10,40 @@ export interface State {
   cursor: "default" | "grabbing" | "crosshair";
 }
 
+export interface EditorStore {
+  getState: () => EditorState;
+  setState: (state: Partial<EditorState>) => void;
+  subscribe: (
+    listener: (state: EditorState, prevState: EditorState) => void
+  ) => () => void;
+}
+
 export type Mode = "idle" | "drawing" | "panning";
 
 export class StateManager {
   private editor: Editor;
-  private store: any;
-  private listeners: Array<(state: State) => void> = [];
+  private store: EditorStore;
 
-  currentTool: string = "brush";
-
-  mode: Mode = "idle";
-
-  // brush settings
-  strokeColor: string = "#000000";
-  strokeWidth: number = 2;
-  fillColor: string = "transparent";
-
-  cursor: "default" | "grabbing" | "crosshair" = "default";
-
-  constructor(editor: Editor, store: any) {
+  constructor(editor: Editor, store: EditorStore) {
     this.editor = editor;
     this.store = store;
+
+    this.store.subscribe((state, prev) => {
+      // currentTool 변경 감지
+      if (state.currentTool !== prev.currentTool) {
+        this.editor.toolManager.changeTool(state.currentTool);
+      }
+      if (state && prev) {
+        this.editor.hisotryManager.record(state, prev);
+      }
+    });
   }
 
-  setCurrentTool(tool: string) {
-    this.currentTool = tool;
-    this.store.setState({ currentTool: tool });
+  get<K extends keyof EditorState>(key: K): EditorState[K] {
+    return this.store.getState()[key];
+  }
+
+  set(patch: Partial<EditorState>) {
+    this.store.setState(patch);
   }
 }
