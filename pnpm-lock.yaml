@@ -5,6 +5,12 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  immer:
+    specifier: ^10.1.3
+    version: 10.1.3
+  just-diff:
+    specifier: ^6.0.2
+    version: 6.0.2
   konva:
     specifier: ^10.0.2
     version: 10.0.2
@@ -16,7 +22,7 @@ dependencies:
     version: 19.1.1(react@19.1.1)
   zustand:
     specifier: ^5.0.8
-    version: 5.0.8(@types/react@19.1.16)(react@19.1.1)
+    version: 5.0.8(@types/react@19.1.16)(immer@10.1.3)(react@19.1.1)
 
 devDependencies:
   '@eslint/js':
@@ -1445,6 +1451,10 @@ packages:
     engines: {node: '>= 4'}
     dev: true
 
+  /immer@10.1.3:
+    resolution: {integrity: sha512-tmjF/k8QDKydUlm3mZU+tjM6zeq9/fFpPqH9SzWmBnVVKsPBg/V66qsMwb3/Bo90cgUN+ghdVBess+hPsxUyRw==}
+    dev: false
+
   /import-fresh@3.3.1:
     resolution: {integrity: sha512-TR3KfrTZTYLPB6jUjfx6MF9WcWrHL9su5TObK4ZkYgBdWKPOFoSoQIdEuTuR82pmtxH2spWG9h6etwfr1pLBqQ==}
     engines: {node: '>=6'}
@@ -1513,6 +1523,10 @@ packages:
     engines: {node: '>=6'}
     hasBin: true
     dev: true
+
+  /just-diff@6.0.2:
+    resolution: {integrity: sha512-S59eriX5u3/QhMNq3v/gm8Kd0w8OS6Tz2FS1NG4blv+z0MuQcBRJyFWjdovM0Rad4/P4aUPFtnkNjMjyMlMSYA==}
+    dev: false
 
   /keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
@@ -1932,7 +1946,7 @@ packages:
     engines: {node: '>=10'}
     dev: true
 
-  /zustand@5.0.8(@types/react@19.1.16)(react@19.1.1):
+  /zustand@5.0.8(@types/react@19.1.16)(immer@10.1.3)(react@19.1.1):
     resolution: {integrity: sha512-gyPKpIaxY9XcO2vSMrLbiER7QMAMGOQZVRdJ6Zi782jkbzZygq5GI9nG8g+sMgitRtndwaBSl7uiqC49o1SSiw==}
     engines: {node: '>=12.20.0'}
     peerDependencies:
@@ -1951,5 +1965,6 @@ packages:
         optional: true
     dependencies:
       '@types/react': 19.1.16
+      immer: 10.1.3
       react: 19.1.1
     dev: false
