@@ -1,17 +1,18 @@
 import Konva from "konva";
 import type { Editor } from "..";
-import { Tool } from "./Tool";
+import { BaseTool } from "./Tool";
 
-export class BrushTool extends Tool {
+export class BrushTool extends BaseTool {
+  name = "brush";
   state: "idle" | "drawing" = "idle";
 
   line: Konva.Line | null = null;
 
   constructor(editor: Editor) {
-    super(editor, "brush");
+    super(editor);
   }
 
-  onEnter(): void {
+  onEnter() {
     this.editor.canvas.stage.container().style.cursor = "crosshair";
     // sync state
     // this.line.setAttrs({
@@ -20,15 +21,22 @@ export class BrushTool extends Tool {
     // });
   }
 
+  onExit() {}
+
   onPointerDown() {
     this.state = "drawing";
     this.line = new Konva.Line({
+      name: "shape",
       points: [],
       fill: "",
       stroke: "#000000",
       strokeWidth: 2,
       originX: "center",
       originY: "center",
+      lineCap: "round",
+      lineJoin: "round",
+      hitStrokeWidth: 10,
+      // hitStrokeWidth: ,
       // globalCompositeOperation: "source-over",
     });
 

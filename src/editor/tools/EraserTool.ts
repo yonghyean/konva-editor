@@ -1,22 +1,26 @@
 import Konva from "konva";
 import type { Editor } from "..";
-import { Tool } from "./Tool";
+import { BaseTool } from "./Tool";
 
-export class EraserTool extends Tool {
+export class EraserTool extends BaseTool {
+  name = "eraser";
   state: "idle" | "erasing" = "idle";
   line: Konva.Line | null = null;
 
   constructor(editor: Editor) {
-    super(editor, "eraser");
+    super(editor);
   }
 
-  onEnter(): void {
+  onEnter() {
     this.editor.canvas.stage.container().style.cursor = "crosshair";
   }
+
+  onExit() {}
 
   onPointerDown() {
     this.state = "erasing";
     this.line = new Konva.Line({
+      name: "shape",
       points: [],
       stroke: "#ffffff", // 보통 흰색 또는 배경색으로 설정
       strokeWidth: 20, // 지우개 크기 조절

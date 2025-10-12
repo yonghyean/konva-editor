@@ -1,22 +1,31 @@
 import type Konva from "konva";
 import type { Editor } from "..";
 
-export abstract class Tool {
-  protected editor: Editor;
+export interface Tool {
   name: string;
+  editor: Editor;
 
-  constructor(editor: Editor, name: string) {
-    this.editor = editor;
-    this.name = name;
+  onEnter(): void;
+  onExit(): void;
+
+  onClick?(e: Konva.KonvaEventObject<MouseEvent>): void;
+  onPointerDown?(e: Konva.KonvaEventObject<PointerEvent>): void;
+  onPointerMove?(e: Konva.KonvaEventObject<PointerEvent>): void;
+  onPointerUp?(e: Konva.KonvaEventObject<PointerEvent>): void;
+  onPointerCancel?(e: Konva.KonvaEventObject<PointerEvent>): void;
+  onPointerOver?(e: Konva.KonvaEventObject<PointerEvent>): void;
+  onPointerEnter?(e: Konva.KonvaEventObject<PointerEvent>): void;
+  onPointerOut?(e: Konva.KonvaEventObject<PointerEvent>): void;
+  onPointerLeave?(e: Konva.KonvaEventObject<PointerEvent>): void;
+  onPointerClick?(e: Konva.KonvaEventObject<PointerEvent>): void;
+  onPointerDblClick?(e: Konva.KonvaEventObject<PointerEvent>): void;
+}
+
+export abstract class BaseTool implements Tool {
+  editor: Editor;
+  abstract name: string;
+
+  constructor(editor: Editor) {
+    this.editor = editor!;
   }
-
-  /** Tool 활성 */
-  onEnter() {}
-
-  /** Tool 비활성 */
-  onExit() {}
-
-  abstract onPointerDown(e?: Konva.KonvaEventObject<PointerEvent>): void;
-  abstract onPointerMove(e?: Konva.KonvaEventObject<PointerEvent>): void;
-  abstract onPointerUp(e?: Konva.KonvaEventObject<PointerEvent>): void;
 }
