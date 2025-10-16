@@ -19,14 +19,21 @@ export class HistoryManager {
   private undoStack: HistoryState[] = [];
   private redoStack: HistoryState[] = [];
 
+  private isUndo: boolean = false;
+  private isRedo: boolean = false;
+
   constructor(editor: Editor) {
     this.editor = editor;
 
-    let prev = this.editor.store.getState();
+    this.editor.store.subscribe((next, prev) => {
+      if (next.shapes === prev.shapes) return;
+      if (this.isUndo || this.isRedo) {
+        this.isUndo = false;
+        this.isRedo = false;
+        return;
+      }
 
-    this.editor.store.subscribe((next) => {
       this.record(next, prev);
-      prev = next;
     });
   }
 
@@ -54,6 +61,7 @@ export class HistoryManager {
     const entry = this.undoStack.pop();
     if (!entry) return;
     const next = applyPatches(state, entry.inversePatches);
+    this.isUndo = true;
     this.editor.store.setState(next);
     this.redoStack.push(entry);
   }
@@ -63,6 +71,7 @@ export class HistoryManager {
     const entry = this.redoStack.pop();
     if (!entry) return;
     const next = applyPatches(state, entry.patches);
+    this.isRedo = true;
     this.editor.store.setState(next);
     this.undoStack.push(entry);
   }
