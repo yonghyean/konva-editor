@@ -3,7 +3,7 @@ import { Editor } from "./editor";
 import { useEditor, useEditorStore } from "./hooks/useEditor";
 import { useEditorState } from "./hooks/useEditorState";
 import { enablePatches } from "immer";
-import { StylePannel, Toolbar } from "./components/toolbar";
+import { Toolbar } from "./components/toolbar";
 
 enablePatches();
 
@@ -36,9 +36,6 @@ function App() {
       ></div>
       <div className="absolute flex left-0 right-0 mx-auto top-3 items-center justify-center">
         <Toolbar />
-      </div>
-      <div className="absolute flex right-3 top-3 items-center justify-center">
-        <StylePannel />
       </div>
     </div>
   );
