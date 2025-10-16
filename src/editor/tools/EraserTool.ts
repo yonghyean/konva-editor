@@ -1,50 +1,43 @@
 import Konva from "konva";
 import type { Editor } from "..";
 import { BaseTool } from "./Tool";
+import type { PointerEvent } from "react";
+
+const PREVIEW_OPACITY = 0.3;
 
 export class EraserTool extends BaseTool {
   name = "eraser";
   state: "idle" | "erasing" = "idle";
-  line: Konva.Line | null = null;
+  targetIds: Set<number>;
+  group: Konva.Group; // 삭제될 도형
 
   constructor(editor: Editor) {
     super(editor);
-  }
 
-  onEnter() {
-    this.editor.canvas.stage.container().style.cursor = "crosshair";
+    this.targetIds = new Set();
+    this.group = new Konva.Group({
+      opacity: PREVIEW_OPACITY,
+    });
+    this.editor.canvas.topLayer.add(this.group);
   }
-
-  onExit() {}
 
   onPointerDown() {
     this.state = "erasing";
-    this.line = new Konva.Line({
-      name: "shape",
-      points: [],
-      stroke: "#ffffff", // 보통 흰색 또는 배경색으로 설정
-      strokeWidth: 20, // 지우개 크기 조절
-      globalCompositeOperation: "destination-out", // 실제 지우개 효과
-      lineCap: "round",
-      lineJoin: "round",
-    });
-
-    this.editor.canvas.layer.add(this.line);
-    this.editor.canvas.layer.draw();
   }
 
-  onPointerMove() {
+  onPointerMove(e: Konva.KonvaEventObject<PointerEvent>) {
     if (this.state !== "erasing") return;
-    const pos = this.editor.canvas.stage.getPointerPosition();
-    if (!pos) return;
-    const points = this.line?.points() || [];
-    points.push(pos.x, pos.y);
-    this.line?.points(points);
-    this.editor.canvas.layer.batchDraw();
+    if (!(e.target instanceof Konva.Shape)) return;
+    if (this.targetIds.has(e.target._id)) return;
+
+    this.targetIds.add(e.target._id);
+    const shape: Konva.Shape = e.target;
+    this.group.add(shape);
   }
 
   onPointerUp() {
-    this.line = null;
     this.state = "idle";
+
+    this.group.removeChildren();
   }
 }
