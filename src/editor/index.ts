@@ -1,5 +1,6 @@
 import { Canvas, type CanvasOptions } from "./canvas";
 import { HistoryManager } from "./managers/HistoryManager";
+import { ShapeManager } from "./managers/ShapeManager";
 import { ToolManager } from "./managers/ToolManager";
 import type { EditorStore } from "./store";
 
@@ -12,12 +13,15 @@ export class Editor {
   canvas: Canvas;
   store: EditorStore;
   // managers
+
+  shapeManager: ShapeManager;
   toolManager: ToolManager;
   hisotryManager: HistoryManager;
 
   constructor(options: EditorOptions) {
     this.canvas = new Canvas(options.canvas);
     this.store = options.store;
+    this.shapeManager = new ShapeManager(this);
     this.toolManager = new ToolManager(this);
     this.hisotryManager = new HistoryManager(this);
 
