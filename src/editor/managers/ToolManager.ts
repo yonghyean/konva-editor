@@ -25,9 +25,7 @@ export class ToolManager {
       throw new Error("Tool not found");
     }
     // 이전 툴의 onExit 호출
-    const prevTool = this.tools.get(
-      this.editor.stateManager.get("currentTool")
-    );
+    const prevTool = this.tools.get(this.editor.store.getState().tool.current);
     if (prevTool) {
       prevTool.onExit();
     }
@@ -48,7 +46,7 @@ export class ToolManager {
 
   handleCick(e: Konva.KonvaEventObject<MouseEvent>) {
     const currentTool = this.editor.toolManager.tools.get(
-      this.editor.stateManager.get("currentTool")
+      this.editor.store.getState().tool.current
     );
     if (!currentTool?.onClick) return;
     currentTool.onClick(e);
@@ -56,7 +54,7 @@ export class ToolManager {
 
   handlePointerDown(e: Konva.KonvaEventObject<PointerEvent>) {
     const currentTool = this.editor.toolManager.tools.get(
-      this.editor.stateManager.get("currentTool")
+      this.editor.store.getState().tool.current
     );
     if (!currentTool?.onPointerDown) return;
     currentTool.onPointerDown(e);
@@ -64,7 +62,7 @@ export class ToolManager {
 
   handlePointerMove(e: Konva.KonvaEventObject<PointerEvent>) {
     const currentTool = this.editor.toolManager.tools.get(
-      this.editor.stateManager.get("currentTool")
+      this.editor.store.getState().tool.current
     );
     if (!currentTool?.onPointerMove) return;
     currentTool.onPointerMove(e);
@@ -72,7 +70,7 @@ export class ToolManager {
 
   handlePointerUp(e: Konva.KonvaEventObject<PointerEvent>) {
     const currentTool = this.editor.toolManager.tools.get(
-      this.editor.stateManager.get("currentTool")
+      this.editor.store.getState().tool.current
     );
     if (!currentTool?.onPointerUp) return;
     currentTool.onPointerUp(e);
@@ -80,7 +78,7 @@ export class ToolManager {
 
   handlePointerOver(e: Konva.KonvaEventObject<PointerEvent>) {
     const currentTool = this.editor.toolManager.tools.get(
-      this.editor.stateManager.get("currentTool")
+      this.editor.store.getState().tool.current
     );
     if (!currentTool?.onPointerOver) return;
     currentTool.onPointerOver(e);
@@ -88,7 +86,7 @@ export class ToolManager {
 
   handlePointerOut(e: Konva.KonvaEventObject<PointerEvent>) {
     const currentTool = this.editor.toolManager.tools.get(
-      this.editor.stateManager.get("currentTool")
+      this.editor.store.getState().tool.current
     );
     if (!currentTool?.onPointerOut) return;
     currentTool.onPointerOut(e);

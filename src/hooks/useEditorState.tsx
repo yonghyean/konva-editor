@@ -1,34 +1,30 @@
 import { create } from "zustand";
-import type { EditorState } from "../editor/managers/StateManager";
 import { immer } from "zustand/middleware/immer";
+import type { EditorState } from "../editor/state";
+import { set as _set } from "lodash-es";
 
-interface Actions {
-  setCurrentTool: (tool: string) => void;
-  setStrokeColor: (color: string) => void;
-  setStrokeWidth: (width: number) => void;
-  setFillColor: (color: string) => void;
-}
-
-export const useEditorState = create<EditorState & Actions>()(
-  immer((set) => ({
-    currentTool: "brush",
-    setCurrentTool: (tool: string) => {
-      set({ currentTool: tool });
-    },
-
+const initialEditorState: EditorState = {
+  camera: { x: 0, y: 0, zoom: 1, rotation: 0 },
+  selection: { ids: [] },
+  shapes: { entities: {}, selectedIds: [] },
+  tool: { current: "select", locked: false, mode: "idle" },
+  style: {
     strokeColor: "#000000",
-    setStrokeColor: (color: string) => set({ strokeColor: color }),
-
+    fillColor: "#ffffff00",
     strokeWidth: 2,
-    setStrokeWidth: (width: number) => set({ strokeWidth: width }),
+    opacity: 1,
+  },
+};
 
-    fillColor: "",
-    setFillColor: (color: string) => set({ fillColor: color }),
-
-    mode: "idle",
-
-    selection: [],
-
-    cursor: "default",
+export const useEditorState = create<
+  EditorState & {
+    update: (path: string, value: any) => void;
+  }
+>()(
+  immer((set) => ({
+    ...initialEditorState,
+    update: (path, value) => {
+      set((state) => _set(state, path, value));
+    },
   }))
 );

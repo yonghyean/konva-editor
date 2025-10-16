@@ -1,7 +1,7 @@
 import { Canvas, type CanvasOptions } from "./canvas";
 import { HistoryManager } from "./managers/HistoryManager";
-import { StateManager, type EditorStore } from "./managers/StateManager";
 import { ToolManager } from "./managers/ToolManager";
+import type { EditorStore } from "./store";
 
 interface EditorOptions {
   canvas: CanvasOptions;
@@ -10,22 +10,21 @@ interface EditorOptions {
 
 export class Editor {
   canvas: Canvas;
-
+  store: EditorStore;
   // managers
-  stateManager: StateManager;
   toolManager: ToolManager;
   hisotryManager: HistoryManager;
 
   constructor(options: EditorOptions) {
     this.canvas = new Canvas(options.canvas);
-    this.stateManager = new StateManager(this, options.store);
+    this.store = options.store;
     this.toolManager = new ToolManager(this);
     this.hisotryManager = new HistoryManager(this);
 
     this.bindEvents();
   }
 
-  bindEvents() {
+  private bindEvents() {
     this.canvas.stage.on(
       "click",
       this.toolManager.handleCick.bind(this.toolManager)

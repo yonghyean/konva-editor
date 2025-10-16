@@ -1,50 +1,70 @@
-import { diff } from "just-diff";
-import type { EditorState } from "./StateManager";
 import type { Editor } from "..";
-import type { Patch } from "immer";
+import {
+  applyPatches,
+  enablePatches,
+  produceWithPatches,
+  type Patch,
+} from "immer";
+import type { EditorState } from "../state";
 
-// type DotKeys<T, P extends string = ""> = {
-//   [K in keyof T & string]: T[K] extends Record<string, any>
-//     ? DotKeys<T[K], `${P}${K}.`>
-//     : `${P}${K}`;
-// }[keyof T & string];
+interface HistoryState {
+  patches: Patch[];
+  inversePatches: Patch[];
+}
 
-// type Diff = ReturnType<typeof diff<DotKeys<EditorState>>>;
-type Diff = Patch[];
+enablePatches();
 
 export class HistoryManager {
   editor: Editor;
-  private undoStack: Diff[] = [];
-  private redoStack: Diff[] = [];
+  private undoStack: HistoryState[] = [];
+  private redoStack: HistoryState[] = [];
 
   constructor(editor: Editor) {
     this.editor = editor;
+
+    let prev = this.editor.store.getState();
+
+    this.editor.store.subscribe((next) => {
+      this.record(next, prev);
+      prev = next;
+    });
   }
 
   record(nextState: EditorState, prevState: EditorState) {
-    const delta = diff(nextState, prevState);
-    if (delta.length) {
-      this.pushState(delta);
+    const [, patches, inversePatches] = produceWithPatches(
+      prevState,
+      (draft) => {
+        Object.assign(draft, nextState);
+      }
+    );
+
+    if (patches.length) {
+      this.undoStack.push({ patches, inversePatches });
+      this.redoStack = []; // 새로운 변경 시 redo 무효화
     }
   }
 
-  pushState(state: Diff) {
+  pushState(state: HistoryState) {
     this.undoStack.push(state);
     this.redoStack = [];
   }
 
-  undo(): Diff | null {
-    if (this.undoStack.length === 0) return null;
-    const state = this.undoStack.pop()!;
-    this.redoStack.push(state);
-    return state;
+  undo() {
+    const state = this.editor.store.getState();
+    const entry = this.undoStack.pop();
+    if (!entry) return;
+    const next = applyPatches(state, entry.inversePatches);
+    this.editor.store.setState(next);
+    this.redoStack.push(entry);
   }
 
-  redo(): Diff | null {
-    if (this.redoStack.length === 0) return null;
-    const state = this.redoStack.pop()!;
-    this.undoStack.push(state);
-    return state;
+  redo() {
+    const state = this.editor.store.getState();
+    const entry = this.redoStack.pop();
+    if (!entry) return;
+    const next = applyPatches(state, entry.patches);
+    this.editor.store.setState(next);
+    this.undoStack.push(entry);
   }
 
   clear() {

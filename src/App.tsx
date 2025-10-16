@@ -2,9 +2,8 @@ import { useEffect } from "react";
 import "./App.css";
 import { Editor } from "./editor";
 import { useEditor, useEditorStore } from "./hooks/useEditor";
-import { useShallow } from "zustand/shallow";
 import { useEditorState } from "./hooks/useEditorState";
-import { applyPatches, enablePatches } from "immer";
+import { enablePatches } from "immer";
 
 enablePatches();
 
@@ -40,21 +39,17 @@ function App() {
         <ToolButton toolName="brush" />
         <ToolButton toolName="eraser" />
         <UndoButton />
+        <RedoButton />
       </div>
     </div>
   );
 }
 
 const ToolButton = ({ toolName }: { toolName: string }) => {
-  const { currentTool, setCurrentTool } = useEditorState(
-    useShallow((state) => ({
-      currentTool: state.currentTool,
-      setCurrentTool: state.setCurrentTool,
-    }))
-  );
-
+  const { current: currentTool } = useEditorState((state) => state.tool);
+  const update = useEditorState((state) => state.update);
   const handleClick = () => {
-    setCurrentTool(toolName);
+    update("tool.current", toolName);
   };
   return (
     <button
@@ -77,16 +72,6 @@ const ToolButton = ({ toolName }: { toolName: string }) => {
 
 const UndoButton = () => {
   const editor = useEditor();
-  const state = useEditorState(
-    useShallow((state) => ({ currentTool: state.currentTool }))
-  );
-
-  const handleClick = () => {
-    const inversePatches = editor?.hisotryManager.undo();
-    if (inversePatches) {
-      useEditorState.setState(applyPatches(state, inversePatches));
-    }
-  };
 
   return (
     <button
@@ -98,9 +83,29 @@ const UndoButton = () => {
         border: "none",
         borderRadius: 4,
       }}
-      onClick={handleClick}
+      onClick={() => editor?.hisotryManager.undo()}
     >
       undo
+    </button>
+  );
+};
+
+const RedoButton = () => {
+  const editor = useEditor();
+
+  return (
+    <button
+      style={{
+        marginRight: 10,
+        padding: "8px 16px",
+        fontSize: 16,
+        cursor: "pointer",
+        border: "none",
+        borderRadius: 4,
+      }}
+      onClick={() => editor?.hisotryManager.redo()}
+    >
+      redo
     </button>
   );
 };
