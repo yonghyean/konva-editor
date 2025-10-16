@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useLayoutEffect } from "react";
 import { Editor } from "./editor";
 import { useEditor, useEditorStore } from "./hooks/useEditor";
 import { useEditorState } from "./hooks/useEditorState";
@@ -8,9 +8,18 @@ import { Toolbar } from "./components/toolbar";
 enablePatches();
 
 function App() {
+  return (
+    <div className="App">
+      <CanvasEditor />
+    </div>
+  );
+}
+
+function CanvasEditor() {
+  const editor = useEditor();
   const setEditor = useEditorStore((state) => state.setEditor);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const editor = new Editor({
       canvas: {
         containerId: "canvas-container",
@@ -24,7 +33,7 @@ function App() {
   }, [setEditor]);
 
   return (
-    <div className="App">
+    <div>
       <div
         id="canvas-container"
         style={{
@@ -34,9 +43,11 @@ function App() {
           background: "#f0f0f0",
         }}
       ></div>
-      <div className="absolute flex left-0 right-0 mx-auto top-3 items-center justify-center">
-        <Toolbar />
-      </div>
+      {editor && (
+        <div className="absolute flex left-0 right-0 mx-auto top-3 items-center justify-center">
+          <Toolbar />
+        </div>
+      )}
     </div>
   );
 }

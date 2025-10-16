@@ -1,7 +1,6 @@
 import Konva from "konva";
 import type { Editor } from "..";
 import { BaseTool } from "./Tool";
-import type { PointerEvent } from "react";
 import { produce } from "immer";
 
 const PREVIEW_OPACITY = 0.3;

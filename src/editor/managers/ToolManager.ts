@@ -4,6 +4,7 @@ import { BrushTool } from "../tools/BrushTool";
 import type { Tool } from "../tools/Tool";
 import { EraserTool } from "../tools/EraserTool";
 import { SelectTool } from "../tools/SelectTool";
+import { produce } from "immer";
 
 export class ToolManager {
   private editor: Editor;
@@ -32,6 +33,13 @@ export class ToolManager {
     // 새로운 툴의 onEnter 호출
     const nextTool = this.tools.get(tool)!;
     nextTool.onEnter();
+
+    // 툴 상태 업데이트
+    this.editor.store.setState(
+      produce((state) => {
+        state.tool.current = tool;
+      })
+    );
   }
 
   hasTool(tool: string) {

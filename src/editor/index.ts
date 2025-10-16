@@ -54,4 +54,8 @@ export class Editor {
       this.toolManager.handlePointerOut.bind(this.toolManager)
     );
   }
+
+  setCurrenTool(tool: string) {
+    this.toolManager.changeTool(tool);
+  }
 }

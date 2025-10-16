@@ -1,34 +1,18 @@
-import { DynamicIcon, type IconName } from "lucide-react/dynamic";
-import { Button } from "../ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { useTools } from "@/hooks/useTools";
+import { ToolbarItem } from "./ToolbarItem";
 import { useEditorState } from "@/hooks/useEditorState";
+import React from "react";
 
 interface ToolButtonProps {
   tool: string;
-  iconName: IconName;
 }
-
-export function ToolButton({ tool, iconName }: ToolButtonProps) {
+export function ToolButton({ tool }: ToolButtonProps) {
+  const tools = useTools();
   const currentTool = useEditorState((state) => state.tool.current);
-  const update = useEditorState((state) => state.update);
-  const isActive = tool === currentTool;
-
-  const handleClick = () => {
-    update("tool.current", tool);
-  };
-
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button
-          size="icon"
-          variant={isActive ? "default" : "ghost"}
-          onClick={handleClick}
-        >
-          <DynamicIcon name={iconName} />
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent>{tool}</TooltipContent>
-    </Tooltip>
+  const isSelected = React.useMemo(
+    () => currentTool === tool,
+    [tool, currentTool]
   );
+
+  return <ToolbarItem {...tools[tool]} isSelected={isSelected} />;
 }

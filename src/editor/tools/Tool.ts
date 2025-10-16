@@ -28,4 +28,7 @@ export abstract class BaseTool implements Tool {
   constructor(editor: Editor) {
     this.editor = editor!;
   }
+
+  onEnter(): void {}
+  onExit(): void {}
 }
