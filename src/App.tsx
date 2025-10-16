@@ -1,9 +1,9 @@
 import { useEffect } from "react";
-import "./App.css";
 import { Editor } from "./editor";
 import { useEditor, useEditorStore } from "./hooks/useEditor";
 import { useEditorState } from "./hooks/useEditorState";
 import { enablePatches } from "immer";
+import { StylePannel, Toolbar } from "./components/toolbar";
 
 enablePatches();
 
@@ -34,12 +34,11 @@ function App() {
           background: "#f0f0f0",
         }}
       ></div>
-      <div style={{ position: "absolute", top: 20, left: 20, zIndex: 10 }}>
-        <ToolButton toolName="select" />
-        <ToolButton toolName="brush" />
-        <ToolButton toolName="eraser" />
-        <UndoButton />
-        <RedoButton />
+      <div className="absolute flex left-0 right-0 mx-auto top-3 items-center justify-center">
+        <Toolbar />
+      </div>
+      <div className="absolute flex right-3 top-3 items-center justify-center">
+        <StylePannel />
       </div>
     </div>
   );
