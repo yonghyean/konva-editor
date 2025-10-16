@@ -1,6 +1,7 @@
 import Konva from "konva";
 import type { Editor } from "..";
 import { BaseTool } from "./Tool";
+import { produce } from "immer";
 
 export class BrushTool extends BaseTool {
   name = "brush";
@@ -11,17 +12,6 @@ export class BrushTool extends BaseTool {
   constructor(editor: Editor) {
     super(editor);
   }
-
-  onEnter() {
-    this.editor.canvas.stage.container().style.cursor = "crosshair";
-    // sync state
-    // this.line.setAttrs({
-    //   stroke: this.editor.stateManager.strokeColor,
-    //   strokeWidth: this.editor.stateManager.strokeWidth,
-    // });
-  }
-
-  onExit() {}
 
   onPointerDown() {
     this.state = "drawing";
@@ -39,9 +29,8 @@ export class BrushTool extends BaseTool {
       // hitStrokeWidth: ,
       // globalCompositeOperation: "source-over",
     });
-
+    this.line.id(`${this.line._id}`);
     this.editor.canvas.layer.add(this.line);
-    this.editor.canvas.layer.draw();
   }
 
   onPointerMove() {
@@ -53,7 +42,19 @@ export class BrushTool extends BaseTool {
   }
 
   onPointerUp() {
-    this.line?.draw();
+    if (this.state !== "drawing") return;
+    if (!this.line) return;
+    const id = this.line._id;
+    const data = this.line.toJSON();
+    this.editor.store.setState(
+      produce((state) => {
+        state.shapes.entities[`${id}`] = {
+          id: `${id}`,
+          attrs: data,
+        };
+      })
+    );
+
     this.line = null;
     // create a line from points
     this.state = "idle";

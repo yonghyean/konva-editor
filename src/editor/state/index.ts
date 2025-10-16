@@ -19,13 +19,7 @@ export interface SelectionState {
 
 export interface Shape {
   id: string;
-  type: "rect" | "circle" | "line" | "image" | "text";
-  x: number;
-  y: number;
-  rotation: number;
-  width?: number;
-  height?: number;
-  props?: Record<string, any>;
+  attrs: string; // Konva.Node.toJson
 }
 
 export interface ShapeState {
