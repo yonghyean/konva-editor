@@ -2,6 +2,7 @@ import type { Editor } from "..";
 import {
   applyPatches,
   enablePatches,
+  produce,
   produceWithPatches,
   type Patch,
 } from "immer";
@@ -32,7 +33,6 @@ export class HistoryManager {
         this.isRedo = false;
         return;
       }
-
       this.record(next, prev);
     });
   }
@@ -48,6 +48,13 @@ export class HistoryManager {
     if (patches.length) {
       this.undoStack.push({ patches, inversePatches });
       this.redoStack = []; // 새로운 변경 시 redo 무효화
+
+      this.editor.store.setState(
+        produce((state) => {
+          state.canUndo = true;
+          state.canRedo = false;
+        })
+      );
     }
   }
 
@@ -56,14 +63,27 @@ export class HistoryManager {
     this.redoStack = [];
   }
 
+  canUndo(): boolean {
+    return this.undoStack.length > 0;
+  }
+
   undo() {
     const state = this.editor.store.getState();
     const entry = this.undoStack.pop();
     if (!entry) return;
     const next = applyPatches(state, entry.inversePatches);
     this.isUndo = true;
-    this.editor.store.setState(next);
     this.redoStack.push(entry);
+
+    this.editor.store.setState({
+      ...next,
+      canUndo: this.canUndo(),
+      canRedo: this.canRedo(),
+    });
+  }
+
+  canRedo(): boolean {
+    return this.redoStack.length > 0;
   }
 
   redo() {
@@ -72,8 +92,13 @@ export class HistoryManager {
     if (!entry) return;
     const next = applyPatches(state, entry.patches);
     this.isRedo = true;
-    this.editor.store.setState(next);
     this.undoStack.push(entry);
+
+    this.editor.store.setState({
+      ...next,
+      canUndo: this.canUndo(),
+      canRedo: this.canRedo(),
+    });
   }
 
   clear() {

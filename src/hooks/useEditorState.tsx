@@ -14,6 +14,8 @@ const initialEditorState: EditorState = {
     strokeWidth: 2,
     opacity: 1,
   },
+  canUndo: false,
+  canRedo: false,
 };
 
 export const useEditorState = create<

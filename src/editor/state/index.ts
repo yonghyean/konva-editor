@@ -4,6 +4,9 @@ export interface EditorState {
   shapes: ShapeState;
   tool: ToolState;
   style: StyleState;
+
+  canUndo: boolean;
+  canRedo: boolean;
 }
 
 export interface CameraState {
