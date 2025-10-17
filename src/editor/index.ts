@@ -1,8 +1,10 @@
+import type Konva from "konva";
 import { Canvas, type CanvasOptions } from "./canvas";
 import { HistoryManager } from "./managers/HistoryManager";
 import { ShapeManager } from "./managers/ShapeManager";
 import { ToolManager } from "./managers/ToolManager";
 import type { EditorStore } from "./store";
+import { produce } from "immer";
 
 interface EditorOptions {
   canvas: CanvasOptions;
@@ -57,5 +59,21 @@ export class Editor {
 
   setCurrenTool(tool: string) {
     this.toolManager.changeTool(tool);
+  }
+
+  setStyleForSelectedShapes(value: string) {
+    // 선택된 도형 찾기
+    const shapes = this.canvas.topLayer.find(".selected") as Konva.Shape[];
+    shapes.forEach((shape) => {
+      shape.stroke(value);
+    });
+  }
+
+  setStyleForNextShapes(value: string) {
+    this.store.setState(
+      produce((state) => {
+        state.style.strokeColor = value;
+      })
+    );
   }
 }

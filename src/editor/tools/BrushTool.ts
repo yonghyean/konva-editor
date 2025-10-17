@@ -15,12 +15,14 @@ export class BrushTool extends BaseTool {
 
   onPointerDown() {
     this.state = "drawing";
+    const styleState = this.editor.store.getState().style;
     this.line = new Konva.Line({
       name: "shape",
       points: [],
       fill: "",
-      stroke: "#000000",
-      strokeWidth: 2,
+      stroke: styleState.strokeColor,
+      strokeWidth: styleState.strokeWidth,
+      opacity: styleState.opacity,
       originX: "center",
       originY: "center",
       lineCap: "round",

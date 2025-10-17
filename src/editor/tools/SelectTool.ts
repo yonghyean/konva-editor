@@ -134,7 +134,10 @@ export class SelectTool extends BaseTool {
 
     if (this.selectionGroup.children.length) {
       this.transformer.nodes([this.selectionGroup]);
-      this.selectionGroup.cache();
+      this.selectionGroup.getChildren().forEach((v) => {
+        v.addName("selected");
+      });
+
       this.editor.store.setState({
         selection: {
           ids: this.selectionGroup.getChildren().map((v) => v.id()),
