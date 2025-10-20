@@ -1,61 +1,31 @@
 import type { Editor } from "..";
-import {
-  applyPatches,
-  enablePatches,
-  produce,
-  produceWithPatches,
-  type Patch,
-} from "immer";
+import { diff } from "just-diff";
+import { diffApply } from "just-diff-apply";
 import type { EditorState } from "../state";
+import { get, set } from "lodash-es";
 
+type Operation = "add" | "replace" | "remove";
+
+interface Patch { op: Operation; path: Array<string | number>; value: any }
 interface HistoryState {
   patches: Patch[];
   inversePatches: Patch[];
 }
-
-enablePatches();
 
 export class HistoryManager {
   editor: Editor;
   private undoStack: HistoryState[] = [];
   private redoStack: HistoryState[] = [];
 
-  private isUndo: boolean = false;
-  private isRedo: boolean = false;
-
   constructor(editor: Editor) {
     this.editor = editor;
-
-    this.editor.store.subscribe((next, prev) => {
-      if (next.shapes === prev.shapes) return;
-      if (this.isUndo || this.isRedo) {
-        this.isUndo = false;
-        this.isRedo = false;
-        return;
-      }
-      this.record(next, prev);
-    });
   }
 
-  record(nextState: EditorState, prevState: EditorState) {
-    const [, patches, inversePatches] = produceWithPatches(
-      prevState,
-      (draft) => {
-        Object.assign(draft, nextState);
-      }
-    );
-
-    if (patches.length) {
-      this.undoStack.push({ patches, inversePatches });
-      this.redoStack = []; // 새로운 변경 시 redo 무효화
-
-      this.editor.store.setState(
-        produce((state) => {
-          state.canUndo = true;
-          state.canRedo = false;
-        })
-      );
-    }
+  record(prevState: EditorState, nextState: EditorState) {
+    const diff= this.diff(prevState, nextState);
+    console.log("diff", diff);
+    this.undoStack.push(diff);
+    this.redoStack = [];
   }
 
   pushState(state: HistoryState) {
@@ -70,16 +40,15 @@ export class HistoryManager {
   undo() {
     const state = this.editor.store.getState();
     const entry = this.undoStack.pop();
-    if (!entry) return;
-    const next = applyPatches(state, entry.inversePatches);
-    this.isUndo = true;
-    this.redoStack.push(entry);
 
-    this.editor.store.setState({
-      ...next,
-      canUndo: this.canUndo(),
-      canRedo: this.canRedo(),
-    });
+    if (!entry) return;
+
+    console.log("entry", entry);
+    console.log("state", state);
+    const next = this.applyPatches(state, entry.inversePatches);
+    console.log("next", next);
+    this.redoStack.push(entry);
+    this.editor.store.setState(next);
   }
 
   canRedo(): boolean {
@@ -87,22 +56,39 @@ export class HistoryManager {
   }
 
   redo() {
-    const state = this.editor.store.getState();
-    const entry = this.redoStack.pop();
-    if (!entry) return;
-    const next = applyPatches(state, entry.patches);
-    this.isRedo = true;
-    this.undoStack.push(entry);
+    // const state = this.editor.store.getState();
+    // const entry = this.redoStack.pop();
+    // if (!entry) return;
+    // const next = applyPatches(state, entry.patches);
+    // this.undoStack.push(entry);
 
-    this.editor.store.setState({
-      ...next,
-      canUndo: this.canUndo(),
-      canRedo: this.canRedo(),
-    });
+    // this.editor.store.setState({
+    //   ...next,
+    //   canUndo: this.canUndo(),
+    //   canRedo: this.canRedo(),
+    // });
   }
 
   clear() {
     this.undoStack = [];
     this.redoStack = [];
+  }
+
+  private diff(prev: EditorState, next: EditorState) {
+    const delta = diff(prev, next);
+    // inversePatches는 prev에서 next로 변경된 부분을 저장
+    return delta.reduce((acc, patch) => {
+      acc.patches.push(patch);
+      acc.inversePatches.push({
+        op: patch.op === "add" ? "remove" : patch.op === "remove" ? "add" : patch.op,
+        path: patch.path,
+        value: get(prev, patch.path),
+      });
+      return acc;
+    }, { patches: [] as Patch[], inversePatches: [] as Patch[] });
+  }
+
+  private applyPatches(state: EditorState, patches: Patch[]) {
+    return diffApply(state, patches);
   }
 }

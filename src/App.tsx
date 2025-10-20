@@ -1,14 +1,11 @@
 import { useLayoutEffect } from "react";
 import { Editor } from "./editor";
 import { useEditor, useEditorStore } from "./hooks/useEditor";
-import { useEditorState } from "./hooks/useEditorState";
-import { enablePatches } from "immer";
 import { Toolbar } from "./components/toolbar";
 import { UndoRedoGroup } from "./components/actions/UndoRedoGroup";
 import { ActionsProvider } from "./hooks/useActions";
 import { StylePannel } from "./components/pannels/StylePannel";
 
-enablePatches();
 
 function App() {
   return (
@@ -29,7 +26,6 @@ function CanvasEditor() {
         width: innerWidth,
         height: innerHeight,
       },
-      store: useEditorState,
     });
 
     setEditor(editor);

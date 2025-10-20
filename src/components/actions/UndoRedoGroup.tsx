@@ -1,5 +1,4 @@
 import { ActionButton } from "./ActionButton";
-import { useEditorState } from "@/hooks/useEditorState";
 
 export function UndoRedoGroup() {
   return (
@@ -11,13 +10,13 @@ export function UndoRedoGroup() {
 }
 
 function UndoButton() {
-  const canUndo = useEditorState((state) => state.canUndo);
+  // const canUndo = useEditor().hisotryManager.canUndo();
 
-  return <ActionButton actionId="undo" disabled={!canUndo} />;
+  return <ActionButton actionId="undo" />;
 }
 
 function RedoButton() {
-  const canRedo = useEditorState((state) => state.canRedo);
+  // const canRedo = useEditor().hisotryManate.canRedo);
 
-  return <ActionButton actionId="redo" disabled={!canRedo} />;
+  return <ActionButton actionId="redo" />;
 }

@@ -14,8 +14,12 @@ export class Canvas {
       container: containerId,
       ...opts,
     });
-    this.layer = new Konva.Layer();
-    this.topLayer = new Konva.Layer();
+    this.layer = new Konva.Layer({
+      name: "layer",
+    });
+    this.topLayer = new Konva.Layer({
+      name: "topLayer",
+    });
     this.stage.add(this.layer, this.topLayer);
   }
 }

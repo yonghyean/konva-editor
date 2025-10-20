@@ -15,6 +15,8 @@ export class EraserTool extends BaseTool {
     super(editor);
 
     this.targetIds = new Set();
+
+    // this.editor.shapeManager.createGroup(this.group.getChildren().map((child) => child.toJSON()));
     this.group = new Konva.Group({
       opacity: PREVIEW_OPACITY,
     });
@@ -37,17 +39,10 @@ export class EraserTool extends BaseTool {
 
   onPointerUp() {
     this.state = "idle";
-
-    // 삭제할 id
-    const ids = this.targetIds.values();
-    this.editor.store.setState(
-      produce((state) => {
-        for (const id of ids) {
-          delete state.shapes.entities[id];
-        }
-      })
-    );
-    this.targetIds.clear();
+    
+    this.editor.run(() => {
+      this.editor.removeShapes(this.group.getChildren().map((child) => child.id()));
+    });
     this.group.removeChildren();
   }
 }

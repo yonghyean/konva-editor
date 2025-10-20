@@ -25,7 +25,7 @@ export function StyleProvider({ children }: StylesProviderProps) {
   const handleValueChange = (value: string) => {
     if (!editor) return;
     editor.setStyleForSelectedShapes(value);
-    editor.setStyle(value);
+    editor.setStyleForNextShapes(value);
   };
 
   return (

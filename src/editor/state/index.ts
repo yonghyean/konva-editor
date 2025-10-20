@@ -1,3 +1,5 @@
+import type Konva from "konva";
+
 export interface EditorState {
   camera: CameraState;
   selection: SelectionState;
@@ -20,15 +22,9 @@ export interface SelectionState {
   ids: string[];
 }
 
-export interface Shape {
-  id: string;
-  attrs: string; // Konva.Node.toJson
-}
+export type Shape = { id: string; } & Konva.Shape['attrs'];
 
-export interface ShapeState {
-  entities: Record<string, Shape>;
-  selectedIds: string[];
-}
+export type ShapeState = Shape[];
 
 export interface ToolState {
   current: string; // "select" | "brush" | "text" 등

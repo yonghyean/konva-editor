@@ -1,20 +1,20 @@
 import { StyleProvider, useStyles } from "@/hooks/useStyles";
 import { ToggleGroup, ToggleGroupItem } from "../ui/toggle-group";
 import { STYLES } from "@/constants/styles";
-import { useEditorState } from "@/hooks/useEditorState";
+
 
 export function StylePannel() {
-  const currentStyle = useEditorState((state) => state.style);
+  // const currentStyle = useEditorState((state) => state.style);
 
   return (
     <StyleProvider>
       <div className="flex flex-col gap-3 shadow-xs bg-background border rounded-lg p-3 w-52 text-sm">
         <div className="flex flex-col gap-1">
-          <StylePannelColoricker
+          {/* <StylePannelColoricker
             title="선 색상"
             items={STYLES.color}
-            value={currentStyle.strokeColor}
-          />
+            value={currentStyle.strokeColor} */}
+          {/* /> */}
         </div>
       </div>
     </StyleProvider>

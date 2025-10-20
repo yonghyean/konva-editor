@@ -1,13 +1,12 @@
-import Konva from "konva";
+import type Konva from "konva";
 import type { Editor } from "..";
 import { BaseTool } from "./Tool";
-import { produce } from "immer";
 
 export class BrushTool extends BaseTool {
   name = "brush";
   state: "idle" | "drawing" = "idle";
 
-  line: Konva.Line | null = null;
+  lineId: string | null = null;
 
   constructor(editor: Editor) {
     super(editor);
@@ -16,9 +15,15 @@ export class BrushTool extends BaseTool {
   onPointerDown() {
     this.state = "drawing";
     const styleState = this.editor.store.getState().style;
-    this.line = new Konva.Line({
-      name: "shape",
-      points: [],
+    const pointer = this.editor.canvas.stage.getPointerPosition();
+    const initialPoints = pointer ? [pointer.x, pointer.y] : [];
+
+    // 트랜잭션 시작
+    this.editor.startTransaction();
+    
+    // shape 생성 (트랜잭션 내에서)
+    this.lineId = this.editor.createShape({
+      points: initialPoints,
       fill: "",
       stroke: styleState.strokeColor,
       strokeWidth: styleState.strokeWidth,
@@ -28,37 +33,32 @@ export class BrushTool extends BaseTool {
       lineCap: "round",
       lineJoin: "round",
       hitStrokeWidth: 10,
-      // hitStrokeWidth: ,
-      // globalCompositeOperation: "source-over",
     });
-    this.line.id(`${this.line._id}`);
-    this.editor.canvas.layer.add(this.line);
   }
 
   onPointerMove() {
     if (this.state !== "drawing") return;
+    if (!this.lineId) return;
+    
+    // drawing 중: store 업데이트 없이 노드만 직접 업데이트
+    const line = this.editor.getShapeNode<Konva.Line>(this.lineId);
     const pos = this.editor.canvas.stage.getPointerPosition();
-    if (!pos) return;
-    this.line?.points().push(pos.x, pos.y);
-    this.line?.draw();
+    if (!line || !pos) return;
+    
+    this.editor.updateShape({
+      id: this.lineId,
+      points: [...line.points(), pos.x, pos.y],
+    });
   }
 
   onPointerUp() {
     if (this.state !== "drawing") return;
-    if (!this.line) return;
-    const id = this.line._id;
-    const data = this.line.toJSON();
-    this.editor.store.setState(
-      produce((state) => {
-        state.shapes.entities[`${id}`] = {
-          id: `${id}`,
-          attrs: data,
-        };
-      })
-    );
-
-    this.line = null;
-    // create a line from points
+    if (!this.lineId) return;
+    
+    // 트랜잭션 커밋
+    this.editor.commitTransaction();
+    
+    this.lineId = null;
     this.state = "idle";
   }
 }
