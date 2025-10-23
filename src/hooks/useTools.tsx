@@ -47,6 +47,30 @@ export function ToolProvider({ children }: ToolsProviderProps) {
           editor?.setCurrentTool("eraser");
         },
       },
+      {
+        tool: "rect",
+        label: "rect",
+        iconName: "square",
+        onSelect: () => {
+          editor?.setCurrentTool("rect");
+        },
+      },
+      {
+        tool: "circle",
+        label: "circle",
+        iconName: "circle",
+        onSelect: () => {
+          editor?.setCurrentTool("circle");
+        },
+      },
+      {
+        tool: "diamond",
+        label: "diamond",
+        iconName: "diamond",
+        onSelect: () => {
+          editor?.setCurrentTool("diamond");
+        },
+      },
     ];
 
     return Object.fromEntries(tools.map((item) => [item.tool, item]));

@@ -1,7 +1,7 @@
 import Konva from "konva";
 
 export interface CanvasOptions extends Omit<Konva.StageConfig, "container"> {
-  containerId: string;
+containerId: string;
 }
 
 export class Canvas {

@@ -4,6 +4,9 @@ import { BrushTool } from "../tools/BrushTool";
 import type { Tool } from "../tools/Tool";
 import { EraserTool } from "../tools/EraserTool";
 import { SelectTool } from "../tools/SelectTool";
+import { RectTool } from "../tools/RectTool";
+import { CircleTool } from "../tools/CircleTool";
+import { DiamondTool } from "../tools/DiamondTool";
 import { produce } from "immer";
 
 export class ToolManager {
@@ -18,6 +21,9 @@ export class ToolManager {
       new SelectTool(this.editor),
       new BrushTool(this.editor),
       new EraserTool(this.editor),
+      new RectTool(this.editor),
+      new CircleTool(this.editor),
+      new DiamondTool(this.editor),
     ]);
   }
 

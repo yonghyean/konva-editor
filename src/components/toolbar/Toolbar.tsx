@@ -8,6 +8,9 @@ export function Toolbar() {
         <ToolButton tool="select" />
         <ToolButton tool="brush" />
         <ToolButton tool="eraser" />
+        <ToolButton tool="rect" />
+        <ToolButton tool="circle" />
+        <ToolButton tool="diamond" />
       </div>
     </ToolProvider>
   );

@@ -1,11 +1,12 @@
-import type Konva from "konva";
+import Konva from "konva";
 import { Canvas, type CanvasOptions } from "./canvas";
 import { HistoryManager } from "./managers/HistoryManager";
 import { ShapeManager } from "./managers/ShapeManager";
 import { ToolManager } from "./managers/ToolManager";
 import { TransactionManager } from "./managers/TransactionManager";
-import { Store, type PathValue, type PropertyPath, type StorePath } from "./store/Store";
+import { Store, type PathValue, type PropertyPath } from "./store/Store";
 import type { EditorState, Shape } from "./state";
+import { Diamond } from "./shapes/Diamond";
 
 interface EditorOptions {
   canvas: CanvasOptions;
@@ -65,7 +66,6 @@ export class Editor {
   // store 업데이트
   setState(...args: Parameters<typeof this.store.set>) {
     this.store.set(...args);
-   
     this.store.emit(...args);
   }
 
@@ -176,3 +176,8 @@ export class Editor {
     this.transactionManager.cancelTransaction();
   }
 }
+
+
+Konva.Util._assign(Konva, {
+  Diamond: Diamond
+});

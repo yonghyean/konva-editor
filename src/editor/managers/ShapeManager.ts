@@ -99,7 +99,7 @@ export class ShapeManager {
   private createShapeNode(shape: Shape): Konva.Shape {
     const attrs = shape
     const node = Konva.Shape.create(JSON.stringify({ className: shape.className, attrs: attrs }));
-    
+    node.listening(false);
     this.shapes.set(shape.id, node);
     this.root.canvas.layer.add(node);
     
@@ -109,8 +109,7 @@ export class ShapeManager {
   private updateShapeNode(shape: Shape) {
     const node = this.shapes.get(shape.id);
     if (!node) return;
-    node.attrs = shape;
-    node.draw();
+    node.setAttrs(shape);
   }
 
   private removeShapeNode(id: string) {

@@ -22,7 +22,7 @@ export type SelectionState = {
   ids: string[];
 }
 
-export type ShapeType = "Line" | "Rect" | "Circle" | "Ellipse" | "Polygon" | "Path" | "Text" | "Image" | "Group" | "Transformer";
+export type ShapeType = "Line" | "Rect" | "Circle" | "Ellipse" | "Polygon" | "Path" | "Text" | "Image" | "Group" | "Transformer" | "Diamond";
 
 export type Shape = { id: string; className: ShapeType; } & Konva.ShapeConfig;
 
