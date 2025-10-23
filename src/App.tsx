@@ -1,47 +1,24 @@
-import { useLayoutEffect } from "react";
-import { Editor } from "./editor";
-import { useEditor, useEditorStore } from "./hooks/useEditor";
+import { EditorProvider, useEditor } from "./hooks/useEditor";
 import { Toolbar } from "./components/toolbar";
 import { UndoRedoGroup } from "./components/actions/UndoRedoGroup";
 import { ActionsProvider } from "./hooks/useActions";
 import { StylePannel } from "./components/pannels/StylePannel";
 
-
 function App() {
   return (
     <div className="App">
-      <CanvasEditor />
+      <EditorProvider>
+        <CanvasEditor />
+      </EditorProvider>
     </div>
   );
 }
 
 function CanvasEditor() {
   const editor = useEditor();
-  const setEditor = useEditorStore((state) => state.setEditor);
-
-  useLayoutEffect(() => {
-    const editor = new Editor({
-      canvas: {
-        containerId: "canvas-container",
-        width: innerWidth,
-        height: innerHeight,
-      },
-    });
-
-    setEditor(editor);
-  }, [setEditor]);
 
   return (
     <div>
-      <div
-        id="canvas-container"
-        style={{
-          width: "100vw",
-          height: "100vh",
-          overflow: "hidden",
-          background: "#f0f0f0",
-        }}
-      ></div>
       {editor && (
         <>
           <ActionsProvider>

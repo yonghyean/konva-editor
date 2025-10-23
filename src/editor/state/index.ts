@@ -1,6 +1,6 @@
 import type Konva from "konva";
 
-export interface EditorState {
+export type EditorState = {
   camera: CameraState;
   selection: SelectionState;
   shapes: ShapeState;
@@ -11,28 +11,30 @@ export interface EditorState {
   canRedo: boolean;
 }
 
-export interface CameraState {
+export type CameraState = {
   x: number;
   y: number;
   zoom: number;
   rotation: number;
 }
 
-export interface SelectionState {
+export type SelectionState = {
   ids: string[];
 }
 
-export type Shape = { id: string; } & Konva.Shape['attrs'];
+export type ShapeType = "Line" | "Rect" | "Circle" | "Ellipse" | "Polygon" | "Path" | "Text" | "Image" | "Group" | "Transformer";
 
-export type ShapeState = Shape[];
+export type Shape = { id: string; className: ShapeType; } & Konva.ShapeConfig;
 
-export interface ToolState {
+export type ShapeState = Record<string, Shape>; // id를 key로 사용
+
+export type ToolState = {
   current: string; // "select" | "brush" | "text" 등
   locked: boolean;
   mode: "idle" | "drawing" | "transforming" | "panning";
 }
 
-export interface StyleState {
+export type StyleState = {
   strokeColor: string;
   fillColor: string;
   strokeWidth: number;

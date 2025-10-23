@@ -1,20 +1,26 @@
 import { StyleProvider, useStyles } from "@/hooks/useStyles";
 import { ToggleGroup, ToggleGroupItem } from "../ui/toggle-group";
+import { useEditor, useEditorValue } from "@/hooks/useEditor";
 import { STYLES } from "@/constants/styles";
+import type { PropertyPath } from "@/editor/store/Store";
+import type { StyleState } from "@/editor/state";
 
 
 export function StylePannel() {
-  // const currentStyle = useEditorState((state) => state.style);
-
   return (
     <StyleProvider>
       <div className="flex flex-col gap-3 shadow-xs bg-background border rounded-lg p-3 w-52 text-sm">
         <div className="flex flex-col gap-1">
-          {/* <StylePannelColoricker
+          <StylePannelColoricker
             title="선 색상"
+            path="strokeColor"
             items={STYLES.color}
-            value={currentStyle.strokeColor} */}
-          {/* /> */}
+          />
+          {/* <StylePannelColoricker
+            title="채우기 색상"
+            path="fillColor"
+            items={STYLES.color}
+          /> */}
         </div>
       </div>
     </StyleProvider>
@@ -23,14 +29,17 @@ export function StylePannel() {
 
 interface StylePannelColorickerProps {
   title: string;
+  path: PropertyPath<StyleState>;
   items: Array<{ value: string }>;
-  value: string;
 }
 function StylePannelColoricker({
   title,
-  value,
+  path,
   items,
 }: StylePannelColorickerProps) {
+  const editor = useEditor();
+  const value = useEditorValue(`style.${path}`, () => editor.getState(`style.${path}`));
+
   const { onValueChange } = useStyles();
 
   return (
@@ -40,7 +49,7 @@ function StylePannelColoricker({
         <ToggleGroup
           type="single"
           className="grid grid-cols-5"
-          value={value}
+          value={value.toString()}
           onValueChange={onValueChange}
         >
           {items.map((color) => (

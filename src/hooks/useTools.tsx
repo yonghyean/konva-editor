@@ -28,7 +28,7 @@ export function ToolProvider({ children }: ToolsProviderProps) {
         label: "select",
         iconName: "mouse-pointer-2",
         onSelect: () => {
-          editor?.setCurrenTool("select");
+          editor?.setCurrentTool("select");
         },
       },
       {
@@ -36,7 +36,7 @@ export function ToolProvider({ children }: ToolsProviderProps) {
         label: "brush",
         iconName: "brush",
         onSelect: () => {
-          editor?.setCurrenTool("brush");
+          editor?.setCurrentTool("brush");
         },
       },
       {
@@ -44,7 +44,7 @@ export function ToolProvider({ children }: ToolsProviderProps) {
         label: "eraser",
         iconName: "eraser",
         onSelect: () => {
-          editor?.setCurrenTool("eraser");
+          editor?.setCurrentTool("eraser");
         },
       },
     ];

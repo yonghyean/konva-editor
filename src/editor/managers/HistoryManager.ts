@@ -1,8 +1,7 @@
 import type { Editor } from "..";
 import { diff } from "just-diff";
-import { diffApply } from "just-diff-apply";
 import type { EditorState } from "../state";
-import { get, set } from "lodash-es";
+import { get } from "lodash-es";
 
 type Operation = "add" | "replace" | "remove";
 
@@ -23,7 +22,8 @@ export class HistoryManager {
 
   record(prevState: EditorState, nextState: EditorState) {
     const diff= this.diff(prevState, nextState);
-    console.log("diff", diff);
+ 
+    if (diff.patches.length === 0) return;
     this.undoStack.push(diff);
     this.redoStack = [];
   }
@@ -38,17 +38,11 @@ export class HistoryManager {
   }
 
   undo() {
-    const state = this.editor.store.getState();
     const entry = this.undoStack.pop();
-
     if (!entry) return;
 
-    console.log("entry", entry);
-    console.log("state", state);
-    const next = this.applyPatches(state, entry.inversePatches);
-    console.log("next", next);
+    this.applyPatches(entry.inversePatches);
     this.redoStack.push(entry);
-    this.editor.store.setState(next);
   }
 
   canRedo(): boolean {
@@ -56,17 +50,11 @@ export class HistoryManager {
   }
 
   redo() {
-    // const state = this.editor.store.getState();
-    // const entry = this.redoStack.pop();
-    // if (!entry) return;
-    // const next = applyPatches(state, entry.patches);
-    // this.undoStack.push(entry);
+    const entry = this.redoStack.pop();
+    if (!entry) return;
 
-    // this.editor.store.setState({
-    //   ...next,
-    //   canUndo: this.canUndo(),
-    //   canRedo: this.canRedo(),
-    // });
+    this.applyPatches(entry.patches);
+    this.undoStack.push(entry);
   }
 
   clear() {
@@ -88,7 +76,9 @@ export class HistoryManager {
     }, { patches: [] as Patch[], inversePatches: [] as Patch[] });
   }
 
-  private applyPatches(state: EditorState, patches: Patch[]) {
-    return diffApply(state, patches);
+  private applyPatches(patches: Patch[]): void {
+    for (const patch of patches) {
+      this.editor.setState(patch.path.join('.') as never, patch.value);
+    }
   }
 }

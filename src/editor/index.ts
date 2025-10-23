@@ -4,8 +4,8 @@ import { HistoryManager } from "./managers/HistoryManager";
 import { ShapeManager } from "./managers/ShapeManager";
 import { ToolManager } from "./managers/ToolManager";
 import { TransactionManager } from "./managers/TransactionManager";
-import { Store } from "./store/Store";
-import type { Shape } from "./state";
+import { Store, type PathValue, type PropertyPath, type StorePath } from "./store/Store";
+import type { EditorState, Shape } from "./state";
 
 interface EditorOptions {
   canvas: CanvasOptions;
@@ -62,23 +62,35 @@ export class Editor {
     );
   }
 
-  setCurrenTool(tool: string) {
-    this.setCurrentTool(tool);
+  // store 업데이트
+  setState(...args: Parameters<typeof this.store.set>) {
+    this.store.set(...args);
+   
+    this.store.emit(...args);
+  }
+
+  getState(): EditorState
+  getState<T extends PropertyPath<EditorState>>(path: T): PathValue<EditorState, T>
+  getState<T extends PropertyPath<EditorState>>(path?: T): PathValue<EditorState, T> | EditorState {
+    if (!path) return this.store.get();
+    return this.store.get(path);
   }
 
   setStyleForSelectedShapes(value: string) {
     // 선택된 도형 찾기
     const shapes = this.canvas.topLayer.find(".selected") as Konva.Shape[];
+    this.setState('style.strokeColor', value);
     shapes.forEach((shape) => {
-      shape.stroke(value);
+      shape.setAttr('stroke', value);
     });
   }
 
   setStyleForNextShapes(value: string) {
-    this.store.set('style.strokeColor', value);
-    this.store.set('style.fillColor', value);
-    this.store.set('style.strokeWidth', value);
-    this.store.set('style.opacity', value);
+    
+      this.setState('style.strokeColor', value);
+      this.setState('style.fillColor', value);
+      this.setState('style.opacity', value);
+    
   }
 
   // 트랜잭션 실행
@@ -130,16 +142,12 @@ export class Editor {
   
   // Tool API
   setCurrentTool(tool: string): void {
-    return this.run(() => {
-      this.toolManager.changeTool(tool);
-      // store 업데이트
-      this.store.set('tool.current', tool);
-      console.log(this.store.getState());
-    })
+    this.toolManager.changeTool(tool);
+    this.setState('tool.current', tool);
   }
   
   getCurrentTool(): string {
-    return this.store.getState().tool.current;
+    return this.store.get('tool.current')
   }
   
   // History API

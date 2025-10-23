@@ -45,7 +45,7 @@ export class TransactionManager {
     }
     
     // 시작 스냅샷으로 롤백
-    this.root.store.setState(this.startSnapshot);
+    this.root.setState('shapes', this.startSnapshot.shapes);
     
     // 트랜잭션 완료
     this.isTransaction = false;

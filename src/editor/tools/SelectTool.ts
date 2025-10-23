@@ -34,11 +34,7 @@ export class SelectTool extends BaseTool {
     // if click on empty area - remove all selections
     if (e.target === this.editor.canvas.stage) {
       this.transformer?.nodes([]);
-      this.editor.store.setState({
-        selection: {
-          ids: [],
-        },
-      });
+      this.editor.setState("selection.ids", []);
       return;
     }
   }
@@ -138,19 +134,11 @@ export class SelectTool extends BaseTool {
         v.addName("selected");
       });
 
-      this.editor.store.setState({
-        selection: {
-          ids: this.selectionGroup.getChildren().map((v) => v.id()),
-        },
-      });
+      this.editor.setState("selection.ids", this.selectionGroup.getChildren().map((v) => v.id()));
     } else {
       this.transformer.nodes([]);
       this.selectionGroup.clearCache();
-      this.editor.store.setState({
-        selection: {
-          ids: [],
-        },
-      });
+      this.editor.setState("selection.ids", []);
     }
   }
 

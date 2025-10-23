@@ -1,15 +1,16 @@
 import Konva from "konva";
 import type { Editor } from "..";
-import type { Shape, ShapeState } from "../state";
+import type {  Shape, ShapeState } from "../state";
 
 export class ShapeManager {
   private root: Editor;
-  private shapeNodes = new Map<string, Konva.Shape>();
-  private shapes = new Map<string, Shape>(); // 내부 메모리 상태
+  private shapes = new Map<string, Konva.Shape>(); // 내부 메모리 상태
 
   constructor(root: Editor) {
     this.root = root;
-
+    this.root.store.listen('shapes', (shapes) => {
+      this.syncShapes(shapes);
+    });
   }
 
   createShape(attrs: Omit<Shape, 'id'>): string {
@@ -21,13 +22,10 @@ export class ShapeManager {
 
     for (const attrs of shapes) {
       const id = this.generateId();
-      const shape: Shape = { id, ...attrs };
-      
-      // 1. 메모리 상태 업데이트
-      this.shapes.set(id, shape);
-      
-      // 2. 노드 생성
-      this.createShapeNode(shape);
+      const shape = { id, ...attrs } as Shape;
+
+      // 스토어 업데이트
+      this.root.setState(`shapes.${id}`, shape);
       
       createdIds.push(id);
     }
@@ -36,24 +34,22 @@ export class ShapeManager {
     return createdIds;
   }
 
-  updateShape(attrs: Partial<Shape> & { id: string }): void {
+  updateShape(attrs: Partial<Shape>): void {
     return this.updateShapes([attrs]);
   }
 
-  updateShapes(attrs: (Partial<Shape> & { id: string })[]): void {
+  updateShapes(attrs: Partial<Shape>[]): void {
     if (!attrs.length) return;
-
+    
     for (const attr of attrs) {
+      if (!attr.id) continue;
       const existing = this.shapes.get(attr.id);
       if (!existing) continue;
       
-      const updated = { ...existing, ...attr };
-      
-      // 1. 메모리 상태 업데이트
-      this.shapes.set(attr.id, updated);
-      
-      // 2. 노드 업데이트
-      this.updateShapeNode(updated);
+      const updated = { ...existing.attrs, ...attr };
+
+      // 스토어 업데이트
+      this.root.setState(`shapes.${attr.id}`, updated as Shape);
     }
   }
 
@@ -64,39 +60,30 @@ export class ShapeManager {
   removeShapes(ids: string[]): void {
     if (!ids.length) return;
 
-    for (const id of ids) {
-      // 1. 메모리 상태 제거
-      this.shapes.delete(id);
-      
-      // 2. 노드 제거
+    for (const id of ids) {      
+      // 노드 제거
       this.removeShapeNode(id);
+
+      // 스토어 업데이트
+      this.root.setState(`shapes.${id}`, undefined);
     }
   }
 
   getShapeNode<T extends Konva.Shape = Konva.Shape>(id: string): T | null {
-    const node = this.shapeNodes.get(id);
-    return node as T | null;
+    const node = this.shapes.get(id);
+    if (!node) return null;
+    return node as T;
   }
 
   syncShapes(shapes: ShapeState): void {
-    // 1. 메모리 상태 업데이트
-    this.shapes.clear();
-    shapes.forEach(shape => this.shapes.set(shape.id, shape));
-    
-    // 2. 노드 동기화
-    const visibleIds = new Set<string>(this.shapeNodes.keys());
-    
-    for (const shape of shapes) {
-      if (!this.shapeNodes.has(shape.id)) {
+    for (const [id, shape] of Object.entries(shapes)) {
+      if (!this.shapes.has(id) && shape) {
         this.createShapeNode(shape);
-      } else {
+      } else if (shape) {
         this.updateShapeNode(shape);
+      } else { // 사라진 도형은 shape가 undefined이기 때문에 removeShapeNode를 호출
+        this.removeShapeNode(id);
       }
-      visibleIds.delete(shape.id);
-    }
-    
-    for (const id of visibleIds) {
-      this.removeShapeNode(id);
     }
   }
 
@@ -110,29 +97,26 @@ export class ShapeManager {
    * @returns 도형 노드
    */
   private createShapeNode(shape: Shape): Konva.Shape {
-    console.log("shape", {...shape});
-    const attrs = structuredClone(shape);
+    const attrs = shape
+    const node = Konva.Shape.create(JSON.stringify({ className: shape.className, attrs: attrs }));
     
-    const node = new Konva.Line(attrs);
-    
-    // if (!node.id()) node.id(shape.id);
-    this.shapeNodes.set(node.id(), node);
+    this.shapes.set(shape.id, node);
     this.root.canvas.layer.add(node);
     
     return node;
   }
 
   private updateShapeNode(shape: Shape) {
-    const node = this.shapeNodes.get(shape.id);
+    const node = this.shapes.get(shape.id);
     if (!node) return;
     node.attrs = shape;
     node.draw();
   }
 
   private removeShapeNode(id: string) {
-    const node = this.shapeNodes.get(id);
+    const node = this.shapes.get(id);
     if (!node) return;
-    this.shapeNodes.delete(id);
+    this.shapes.delete(id);
     node.destroy();
   }
 }
