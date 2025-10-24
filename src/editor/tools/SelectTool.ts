@@ -11,9 +11,7 @@ export class SelectTool extends BaseTool {
    */
   state: "idle" | "selection" | "transforming" | "dragging" = "idle";
 
-  transformer: Konva.Transformer | null = null;
   selectionBox: Konva.Rect | null = null;
-  selectionGroup: Konva.Group | null = null;
 
   lastPointerPosition: { x: number; y: number } = { x: 0, y: 0 };
 
@@ -21,8 +19,6 @@ export class SelectTool extends BaseTool {
     super(editor);
 
     this._createSelectionBox();
-    this._createTransformer();
-    this._createSelectionGroup();
   }
 
   onEnter() {}
@@ -33,19 +29,14 @@ export class SelectTool extends BaseTool {
 
     // if click on empty area - remove all selections
     if (e.target === this.editor.canvas.stage) {
-      this.transformer?.nodes([]);
-      this.editor.setState("selection.ids", []);
+      this.editor.setSelectedShapes([]);
       return;
     }
   }
 
   onPointerDown(e: Konva.KonvaEventObject<PointerEvent>) {
-    if (!this.selectionBox || !this.selectionGroup) return;
-    if (
-      e.target.getParent() === this.transformer ||
-      e.target.getParent() === this.selectionGroup
-    )
-      return;
+    if (!this.selectionBox) return;
+    if (e.target.getParent()?.className === 'Transformer') return;
 
     this.state = "dragging";
 
@@ -59,23 +50,6 @@ export class SelectTool extends BaseTool {
       height: 0,
       visible: true,
     });
-
-    // move old selection back to original layer
-    this.selectionGroup.children.slice().forEach((shape) => {
-      const transform = shape.getAbsoluteTransform();
-      shape.moveTo(this.editor.canvas.layer);
-      shape.setAttrs(transform.decompose());
-    });
-
-    // reset group transforms
-    this.selectionGroup.setAttrs({
-      x: 0,
-      y: 0,
-      scaleX: 1,
-      scaleY: 1,
-      rotation: 0,
-    });
-    this.selectionGroup.clearCache();
   }
 
   onPointerMove() {
@@ -99,7 +73,7 @@ export class SelectTool extends BaseTool {
   }
 
   onPointerUp() {
-    if (!this.selectionBox || !this.transformer || !this.selectionGroup) return;
+    if (!this.selectionBox) return;
     if (!this.selectionBox.visible()) return;
     this.lastPointerPosition = { x: 0, y: 0 };
 
@@ -107,50 +81,26 @@ export class SelectTool extends BaseTool {
       if (this.selectionBox) this.selectionBox.visible(false);
     });
 
-    const shapes = this.editor.canvas.layer.find(".shape") as Konva.Shape[];
     const box = this.selectionBox.getClientRect();
+    const shapes = this.editor.getState('shapes');
+    const selectedIds: string[] = [];
 
-    // 렌더링 퍼모먼스를 위해 모든 자식을 임시 제거
-    this.editor.canvas.layer.removeChildren();
-
-    // 선택 박스와 교차하는 도형은 선택 그룹으로, 아닌 도형은 렌더 레이어에 추가
-    shapes.forEach((shape) => {
+    // 선택 박스와 교차하는 도형 찾기
+    Object.values(shapes).forEach((shape) => {
+      const shapeNode = this.editor.getShapeNode(shape.id);
+      if (!shapeNode) return;
       const intersected = Konva.Util.haveIntersection(
         box,
-        shape.getClientRect()
+        shapeNode.getClientRect()
       );
       if (intersected) {
-        this.selectionGroup?.add(shape);
-        shape.shadowBlur(2);
-      } else {
-        this.editor.canvas.layer.add(shape);
-        shape.shadowBlur(0);
+        selectedIds.push(shape.id);
       }
     });
 
-    if (this.selectionGroup.children.length) {
-      this.transformer.nodes([this.selectionGroup]);
-      this.selectionGroup.getChildren().forEach((v) => {
-        v.addName("selected");
-      });
-
-      this.editor.setState("selection.ids", this.selectionGroup.getChildren().map((v) => v.id()));
-    } else {
-      this.transformer.nodes([]);
-      this.selectionGroup.clearCache();
-      this.editor.setState("selection.ids", []);
-    }
+    this.editor.setSelectedShapes(selectedIds);
   }
 
-  private _createTransformer() {
-    if (this.transformer) return;
-
-    this.transformer = new Konva.Transformer({
-      rotateEnabled: true,
-    });
-
-    this.editor.canvas.topLayer.add(this.transformer);
-  }
 
   private _createSelectionBox() {
     if (this.selectionBox) return;
@@ -164,12 +114,5 @@ export class SelectTool extends BaseTool {
     });
 
     this.editor.canvas.topLayer.add(this.selectionBox);
-  }
-
-  private _createSelectionGroup() {
-    this.selectionGroup = new Konva.Group({
-      draggable: true,
-    });
-    this.editor.canvas.topLayer.add(this.selectionGroup);
   }
 }

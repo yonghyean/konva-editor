@@ -1,6 +1,7 @@
 import Konva from "konva";
 import { Canvas, type CanvasOptions } from "./canvas";
 import { HistoryManager } from "./managers/HistoryManager";
+import { SelectionManager } from "./managers/SelectionManager";
 import { ShapeManager } from "./managers/ShapeManager";
 import { ToolManager } from "./managers/ToolManager";
 import { TransactionManager } from "./managers/TransactionManager";
@@ -16,7 +17,7 @@ export class Editor {
   canvas: Canvas;
   store: Store;
   // managers
-
+  selectionManager: SelectionManager;
   shapeManager: ShapeManager;
   toolManager: ToolManager;
   hisotryManager: HistoryManager;
@@ -28,6 +29,7 @@ export class Editor {
     // 외부 store 저장
     this.store = new Store();
 
+    this.selectionManager = new SelectionManager(this);
     this.shapeManager = new ShapeManager(this);
     this.toolManager = new ToolManager(this);
     this.hisotryManager = new HistoryManager(this);
@@ -64,9 +66,9 @@ export class Editor {
   }
 
   // store 업데이트
-  setState(...args: Parameters<typeof this.store.set>) {
-    this.store.set(...args);
-    this.store.emit(...args);
+  setState<T extends PropertyPath<EditorState>>(path: T, value?: PathValue<EditorState, T>): void {
+    this.store.set(path, value);
+    this.store.emit(path);
   }
 
   getState(): EditorState
@@ -76,34 +78,51 @@ export class Editor {
     return this.store.get(path);
   }
 
+  getSelectedShapes() {
+    const ids = this.getState('selection.ids');
+    return ids.map((id) => this.getShape(id))
+  }
+
+  setSelectedShapes(ids: string[]) {
+    // 히스토리가 최신이면 히스토리 초기화
+    const canRedo = this.hisotryManager.canRedo();
+    console.log("ignoreHistory", canRedo && ids.length === 0);
+      this.run(() => {
+        this.selectionManager.setSelectedShapes(ids);
+      }, { keepRedoStack: canRedo && ids.length === 0 });
+   
+  }
+
   setStyleForSelectedShapes(value: string) {
     // 선택된 도형 찾기
-    const shapes = this.canvas.topLayer.find(".selected") as Konva.Shape[];
-    this.setState('style.strokeColor', value);
-    shapes.forEach((shape) => {
-      shape.setAttr('stroke', value);
+    const shapes = this.getSelectedShapes();
+    this.run(() => {
+      this.setState('style.strokeColor', value);
+      this.updateShapes(shapes.map((shape) => ({ ...shape, stroke: value })));
     });
   }
 
   setStyleForNextShapes(value: string) {
-    
-      this.setState('style.strokeColor', value);
-      this.setState('style.fillColor', value);
-      this.setState('style.opacity', value);
-    
+    this.setState('style.strokeColor', value);
+    this.setState('style.fillColor', value);
   }
 
   // 트랜잭션 실행
-  run<T>(fn: () => T): T {
+  run<T>(fn: () => T, options: { keepRedoStack: boolean } = { keepRedoStack: false }): T {
+    const { keepRedoStack } = options;
+    // 중첩 run은 그냥 실행 (최상위 run에서만 히스토리 기록)
+    // 히스토리 기록 여부가 false인 경우 히스토리 기록 안함
     if (this.isInTransaction()) {
-      // 중첩 run은 그냥 실행 (최상위 run에서만 히스토리 기록)
       return fn();
     }
-    
+
     this.startTransaction();
+
     try {
       const result = fn();
-      this.commitTransaction();
+      if (!keepRedoStack) {
+        this.commitTransaction();
+      }
       return result;
     } catch (error) {
       this.cancelTransaction();
@@ -124,7 +143,7 @@ export class Editor {
     return this.run(() => this.shapeManager.updateShape(shape));
   }
 
-  updateShapes(shapes: Partial<Shape> & { id: string }[]): void {
+  updateShapes(shapes: Shape[]): void {
     return this.run(() => this.shapeManager.updateShapes(shapes));
   }
   
@@ -135,7 +154,11 @@ export class Editor {
   removeShapes(ids: string[]): void {
     return this.run(() => this.shapeManager.removeShapes(ids));
   }
-  
+
+  getShape(id: string): Shape {
+    return this.getState(`shapes.${id}`);
+  }
+
   getShapeNode<T extends Konva.Shape>(id: string): T | null {
     return this.shapeManager.getShapeNode<T>(id);
   }

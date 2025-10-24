@@ -20,12 +20,13 @@ export class HistoryManager {
     this.editor = editor;
   }
 
-  record(prevState: EditorState, nextState: EditorState) {
+  record(prevState: EditorState, nextState: EditorState, options: { keepRedoStack: boolean } = { keepRedoStack: false }) {
     const diff= this.diff(prevState, nextState);
- 
     if (diff.patches.length === 0) return;
     this.undoStack.push(diff);
-    this.redoStack = [];
+    if (!options.keepRedoStack) {
+      this.redoStack = [];
+    }
   }
 
   pushState(state: HistoryState) {
@@ -43,6 +44,7 @@ export class HistoryManager {
 
     this.applyPatches(entry.inversePatches);
     this.redoStack.push(entry);
+    console.log("undo stack", this.undoStack);
   }
 
   canRedo(): boolean {
@@ -55,6 +57,7 @@ export class HistoryManager {
 
     this.applyPatches(entry.patches);
     this.undoStack.push(entry);
+    console.log("redo stack", this.redoStack);
   }
 
   clear() {

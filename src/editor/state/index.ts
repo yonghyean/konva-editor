@@ -1,11 +1,20 @@
 import type Konva from "konva";
 
+export type TransformerState = {
+  x: number;
+  y: number;
+  scaleX: number;
+  scaleY: number;
+  rotation: number;
+}
+
 export type EditorState = {
   camera: CameraState;
   selection: SelectionState;
   shapes: ShapeState;
   tool: ToolState;
   style: StyleState;
+  transformer: TransformerState;
 
   canUndo: boolean;
   canRedo: boolean;
@@ -22,7 +31,7 @@ export type SelectionState = {
   ids: string[];
 }
 
-export type ShapeType = "Line" | "Rect" | "Circle" | "Ellipse" | "Polygon" | "Path" | "Text" | "Image" | "Group" | "Transformer" | "Diamond";
+export type ShapeType = "Line" | "Rect" | "Circle" | "Ellipse" | "Polygon" | "Path" | "Text" | "Image" | "Group" | "Diamond";
 
 export type Shape = { id: string; className: ShapeType; } & Konva.ShapeConfig;
 

@@ -34,6 +34,7 @@ const defaultInitialState: EditorState = {
     strokeWidth: 2,
     opacity: 1,
   },
+  transformer: { x: 0, y: 0, scaleX: 1, scaleY: 1, rotation: 0 },
   canUndo: false,
   canRedo: false,
 };
@@ -47,6 +48,8 @@ export class Store<TState extends EditorState = EditorState, TPath extends Prope
 
   constructor(initialState?: Partial<TState>) {
     this.state = { ...defaultInitialState, ...initialState } as TState;
+    console.log('Store constructor', this.state);
+    
   }
   
   // path 기반 getter
@@ -97,7 +100,7 @@ export class Store<TState extends EditorState = EditorState, TPath extends Prope
    * @param path 실행할 path
    * @param value 실행할 값
    */
-  emit<T extends TPath>(path: T, value?: PathValue<TState, T>): void {
+  emit<T extends TPath>(path: T): void {
     
     // path의 상위 path에 등록된 리스너 실행
     this.listeners.forEach((listeners, parentPath) => {
