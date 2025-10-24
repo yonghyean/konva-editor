@@ -1,7 +1,8 @@
-import { EditorProvider, useEditor } from "./hooks/useEditor";
+import { EditorProvider } from "@/providers/EditorProvider";
+import { useEditor } from "@/hooks/useEditor";
 import { Toolbar } from "./components/toolbar";
 import { UndoRedoGroup } from "./components/actions/UndoRedoGroup";
-import { ActionsProvider } from "./hooks/useActions";
+import { ActionsProvider } from "@/providers/ActionsProvider";
 import { StylePannel } from "./components/pannels/StylePannel";
 
 function App() {

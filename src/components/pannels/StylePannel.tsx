@@ -1,4 +1,5 @@
-import { StyleProvider, useStyles } from "@/hooks/useStyles";
+import { StyleProvider } from "@/providers/StylesProvider";
+import { useStyles } from "@/hooks/useStyles";
 import { ToggleGroup, ToggleGroupItem } from "../ui/toggle-group";
 import { useEditor, useEditorValue } from "@/hooks/useEditor";
 import { STYLES } from "@/constants/styles";

@@ -1,4 +1,4 @@
-import { ToolProvider } from "@/hooks/useTools";
+import { ToolProvider } from "@/providers/ToolsProvider";
 import { ToolButton } from "./ToolButton";
 
 export function Toolbar() {
