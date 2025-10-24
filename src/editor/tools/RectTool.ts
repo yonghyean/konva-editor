@@ -1,20 +1,17 @@
-import Konva from "konva";
-import type { Editor } from "..";
-import { BaseShapeTool } from "./BaseShapeTool";
+import Konva from 'konva';
+import type { Editor } from '..';
+import { BaseShapeTool } from './BaseShapeTool';
 
 export class RectTool extends BaseShapeTool {
-  name = "rect";
+  name = 'rect';
 
   constructor(editor: Editor) {
     super(editor);
   }
 
-  protected createInitialShape(
-    pointer: { x: number; y: number },
-    styleState: any
-  ): string {
+  protected createInitialShape(pointer: { x: number; y: number }, styleState: any): string {
     return this.editor.createShape({
-      className: "Rect",
+      className: 'Rect',
       x: pointer.x,
       y: pointer.y,
       width: 0,
@@ -23,15 +20,12 @@ export class RectTool extends BaseShapeTool {
       stroke: styleState.strokeColor,
       strokeWidth: styleState.strokeWidth,
       opacity: styleState.opacity,
-      originX: "left",
-      originY: "top",
+      originX: 'left',
+      originY: 'top',
     });
   }
 
-  protected updateShapeGeometry(
-    startPoint: { x: number; y: number },
-    currentPoint: { x: number; y: number }
-  ): void {
+  protected updateShapeGeometry(startPoint: { x: number; y: number }, currentPoint: { x: number; y: number }): void {
     if (!this.shapeId) return;
 
     const x = Math.min(startPoint.x, currentPoint.x);

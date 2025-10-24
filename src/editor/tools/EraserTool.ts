@@ -1,13 +1,13 @@
-import Konva from "konva";
-import type { Editor } from "..";
-import { BaseTool } from "./Tool";
-import { produce } from "immer";
+import Konva from 'konva';
+import type { Editor } from '..';
+import { BaseTool } from './Tool';
+import { produce } from 'immer';
 
 const PREVIEW_OPACITY = 0.3;
 
 export class EraserTool extends BaseTool {
-  name = "eraser";
-  state: "idle" | "erasing" = "idle";
+  name = 'eraser';
+  state: 'idle' | 'erasing' = 'idle';
   targetIds: Set<string>;
   group: Konva.Group; // 삭제될 도형
 
@@ -24,11 +24,11 @@ export class EraserTool extends BaseTool {
   }
 
   onPointerDown() {
-    this.state = "erasing";
+    this.state = 'erasing';
   }
 
   onPointerMove(e: Konva.KonvaEventObject<PointerEvent>) {
-    if (this.state !== "erasing") return;
+    if (this.state !== 'erasing') return;
     if (!(e.target instanceof Konva.Shape)) return;
     if (this.targetIds.has(e.target.id())) return;
 
@@ -38,8 +38,8 @@ export class EraserTool extends BaseTool {
   }
 
   onPointerUp() {
-    this.state = "idle";
-    
+    this.state = 'idle';
+
     this.editor.run(() => {
       this.editor.removeShapes(this.group.getChildren().map((child) => child.id()));
     });

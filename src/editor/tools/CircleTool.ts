@@ -1,20 +1,17 @@
-import type { Editor } from "..";
-import type { StyleState } from "../state";
-import { BaseShapeTool } from "./BaseShapeTool";
+import type { Editor } from '..';
+import type { StyleState } from '../state';
+import { BaseShapeTool } from './BaseShapeTool';
 
 export class CircleTool extends BaseShapeTool {
-  name = "circle";
+  name = 'circle';
 
   constructor(editor: Editor) {
     super(editor);
   }
 
-  protected createInitialShape(
-    pointer: { x: number; y: number },
-    styleState: StyleState
-  ): string {
+  protected createInitialShape(pointer: { x: number; y: number }, styleState: StyleState): string {
     return this.editor.createShape({
-      className: "Circle",
+      className: 'Circle',
       x: pointer.x,
       y: pointer.y,
       radius: 0,
@@ -22,15 +19,12 @@ export class CircleTool extends BaseShapeTool {
       stroke: styleState.strokeColor,
       strokeWidth: styleState.strokeWidth,
       opacity: styleState.opacity,
-      originX: "center",
-      originY: "center",
+      originX: 'center',
+      originY: 'center',
     });
   }
 
-  protected updateShapeGeometry(
-    startPoint: { x: number; y: number },
-    currentPoint: { x: number; y: number }
-  ): void {
+  protected updateShapeGeometry(startPoint: { x: number; y: number }, currentPoint: { x: number; y: number }): void {
     if (!this.shapeId) return;
 
     const x = Math.min(startPoint.x, currentPoint.x);

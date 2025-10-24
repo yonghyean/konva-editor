@@ -1,13 +1,13 @@
-import Konva from "konva";
-import { Canvas, type CanvasOptions } from "./canvas";
-import { HistoryManager } from "./managers/HistoryManager";
-import { SelectionManager } from "./managers/SelectionManager";
-import { ShapeManager } from "./managers/ShapeManager";
-import { ToolManager } from "./managers/ToolManager";
-import { TransactionManager } from "./managers/TransactionManager";
-import { Store, type PathValue, type PropertyPath } from "./store/Store";
-import type { EditorState, Shape } from "./state";
-import { Diamond } from "./shapes/Diamond";
+import Konva from 'konva';
+import { Canvas, type CanvasOptions } from './canvas';
+import { HistoryManager } from './managers/HistoryManager';
+import { SelectionManager } from './managers/SelectionManager';
+import { ShapeManager } from './managers/ShapeManager';
+import { ToolManager } from './managers/ToolManager';
+import { TransactionManager } from './managers/TransactionManager';
+import { Store, type PathValue, type PropertyPath } from './store/Store';
+import type { EditorState, Shape } from './state';
+import { Diamond } from './shapes/Diamond';
 
 interface EditorOptions {
   canvas: CanvasOptions;
@@ -39,30 +39,12 @@ export class Editor {
   }
 
   private bindEvents() {
-    this.canvas.stage.on(
-      "click",
-      this.toolManager.handleCick.bind(this.toolManager)
-    );
-    this.canvas.stage.on(
-      "pointerdown",
-      this.toolManager.handlePointerDown.bind(this.toolManager)
-    );
-    this.canvas.stage.on(
-      "pointermove",
-      this.toolManager.handlePointerMove.bind(this.toolManager)
-    );
-    this.canvas.stage.on(
-      "pointerup",
-      this.toolManager.handlePointerUp.bind(this.toolManager)
-    );
-    this.canvas.stage.on(
-      "pointerover",
-      this.toolManager.handlePointerOver.bind(this.toolManager)
-    );
-    this.canvas.stage.on(
-      "pointerout",
-      this.toolManager.handlePointerOut.bind(this.toolManager)
-    );
+    this.canvas.stage.on('click', this.toolManager.handleCick.bind(this.toolManager));
+    this.canvas.stage.on('pointerdown', this.toolManager.handlePointerDown.bind(this.toolManager));
+    this.canvas.stage.on('pointermove', this.toolManager.handlePointerMove.bind(this.toolManager));
+    this.canvas.stage.on('pointerup', this.toolManager.handlePointerUp.bind(this.toolManager));
+    this.canvas.stage.on('pointerover', this.toolManager.handlePointerOver.bind(this.toolManager));
+    this.canvas.stage.on('pointerout', this.toolManager.handlePointerOut.bind(this.toolManager));
   }
 
   // store 업데이트
@@ -71,8 +53,8 @@ export class Editor {
     this.store.emit(path);
   }
 
-  getState(): EditorState
-  getState<T extends PropertyPath<EditorState>>(path: T): PathValue<EditorState, T>
+  getState(): EditorState;
+  getState<T extends PropertyPath<EditorState>>(path: T): PathValue<EditorState, T>;
   getState<T extends PropertyPath<EditorState>>(path?: T): PathValue<EditorState, T> | EditorState {
     if (!path) return this.store.get();
     return this.store.get(path);
@@ -80,17 +62,19 @@ export class Editor {
 
   getSelectedShapes() {
     const ids = this.getState('selection.ids');
-    return ids.map((id) => this.getShape(id))
+    return ids.map((id) => this.getShape(id));
   }
 
   setSelectedShapes(ids: string[]) {
     // 히스토리가 최신이면 히스토리 초기화
     const canRedo = this.hisotryManager.canRedo();
-    console.log("ignoreHistory", canRedo && ids.length === 0);
-      this.run(() => {
+    console.log('ignoreHistory', canRedo && ids.length === 0);
+    this.run(
+      () => {
         this.selectionManager.setSelectedShapes(ids);
-      }, { keepRedoStack: canRedo && ids.length === 0 });
-   
+      },
+      { keepRedoStack: canRedo && ids.length === 0 },
+    );
   }
 
   setStyleForSelectedShapes(value: string) {
@@ -129,7 +113,7 @@ export class Editor {
       throw error;
     }
   }
-  
+
   // Shape API (내부적으로 매니저에 위임)
   createShape(shape: Omit<Shape, 'id'>): string {
     return this.run(() => this.shapeManager.createShape(shape));
@@ -146,9 +130,9 @@ export class Editor {
   updateShapes(shapes: Shape[]): void {
     return this.run(() => this.shapeManager.updateShapes(shapes));
   }
-  
+
   removeShape(id: string): void {
-    return this.run(() => this.shapeManager.removeShape(id)) 
+    return this.run(() => this.shapeManager.removeShape(id));
   }
 
   removeShapes(ids: string[]): void {
@@ -162,22 +146,22 @@ export class Editor {
   getShapeNode<T extends Konva.Shape>(id: string): T | null {
     return this.shapeManager.getShapeNode<T>(id);
   }
-  
+
   // Tool API
   setCurrentTool(tool: string): void {
     this.toolManager.changeTool(tool);
     this.setState('tool.current', tool);
   }
-  
+
   getCurrentTool(): string {
-    return this.store.get('tool.current')
+    return this.store.get('tool.current');
   }
-  
+
   // History API
   undo(): void {
     this.hisotryManager.undo();
   }
-  
+
   redo(): void {
     this.hisotryManager.redo();
   }
@@ -200,7 +184,6 @@ export class Editor {
   }
 }
 
-
 Konva.Util._assign(Konva, {
-  Diamond: Diamond
+  Diamond: Diamond,
 });

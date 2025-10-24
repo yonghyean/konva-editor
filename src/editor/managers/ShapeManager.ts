@@ -1,6 +1,6 @@
-import Konva from "konva";
-import type { Editor } from "..";
-import type {  Shape, ShapeState } from "../state";
+import Konva from 'konva';
+import type { Editor } from '..';
+import type { Shape, ShapeState } from '../state';
 
 export class ShapeManager {
   private root: Editor;
@@ -26,11 +26,10 @@ export class ShapeManager {
 
       // 스토어 업데이트
       this.root.setState(`shapes.${id}`, shape);
-      
+
       createdIds.push(id);
     }
-    
-    
+
     return createdIds;
   }
 
@@ -40,12 +39,12 @@ export class ShapeManager {
 
   updateShapes(attrs: Partial<Shape>[]): void {
     if (!attrs.length) return;
-    
+
     for (const attr of attrs) {
       if (!attr.id) continue;
       const existing = this.shapes.get(attr.id);
       if (!existing) continue;
-      
+
       const updated = { ...existing.attrs, ...attr };
 
       // 스토어 업데이트
@@ -60,7 +59,7 @@ export class ShapeManager {
   removeShapes(ids: string[]): void {
     if (!ids.length) return;
 
-    for (const id of ids) {      
+    for (const id of ids) {
       // 노드 제거
       this.removeShapeNode(id);
 
@@ -81,7 +80,8 @@ export class ShapeManager {
         this.createShapeNode(shape);
       } else if (shape) {
         this.updateShapeNode(shape);
-      } else { // 사라진 도형은 shape가 undefined이기 때문에 removeShapeNode를 호출
+      } else {
+        // 사라진 도형은 shape가 undefined이기 때문에 removeShapeNode를 호출
         this.removeShapeNode(id);
       }
     }
@@ -97,12 +97,12 @@ export class ShapeManager {
    * @returns 도형 노드
    */
   private createShapeNode(shape: Shape): Konva.Shape {
-    const attrs = shape
+    const attrs = shape;
     const node = Konva.Shape.create(JSON.stringify({ className: shape.className, attrs: attrs }));
     node.listening(false);
     this.shapes.set(shape.id, node);
     this.root.canvas.layer.add(node);
-    
+
     return node;
   }
 

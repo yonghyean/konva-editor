@@ -1,5 +1,5 @@
-import type Konva from "konva";
-import type { Editor } from "..";
+import type Konva from 'konva';
+import type { Editor } from '..';
 
 export interface Tool {
   name: string;

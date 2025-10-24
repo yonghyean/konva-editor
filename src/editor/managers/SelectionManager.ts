@@ -1,6 +1,6 @@
-import Konva from "konva";
-import type { Editor } from "..";
-import type { TransformerState } from "../state";
+import Konva from 'konva';
+import type { Editor } from '..';
+import type { TransformerState } from '../state';
 
 export class SelectionManager {
   private editor: Editor;
@@ -9,23 +9,20 @@ export class SelectionManager {
 
   constructor(editor: Editor) {
     this.editor = editor;
-    
+
     // store 리스너 등록
 
     this.editor.store.listen('transformer', (attrs) => {
       this.syncTransformer(attrs);
     });
-    
-    
+
     this.editor.store.listen('selection.ids', (ids) => {
       this.syncSelection(ids);
     });
-    
-    
+
     this._createTransformer();
     this._createSelectionGroup();
   }
-
 
   /**
    * 선택된 shapes 설정
@@ -34,17 +31,16 @@ export class SelectionManager {
     if (!this.selectionGroup) return;
     const shapes = this.editor.getSelectedShapes();
 
-      shapes.forEach(shape => {
-          // 업데이트 transform
-          const shapeNode = this.editor.getShapeNode(shape.id);
-          if (!shapeNode) return;
-          const transform = shapeNode.getAbsoluteTransform();
-          this.editor.updateShape({
-            id: shape.id,
-            ...transform.decompose(),
-          });
+    shapes.forEach((shape) => {
+      // 업데이트 transform
+      const shapeNode = this.editor.getShapeNode(shape.id);
+      if (!shapeNode) return;
+      const transform = shapeNode.getAbsoluteTransform();
+      this.editor.updateShape({
+        id: shape.id,
+        ...transform.decompose(),
       });
-  
+    });
 
     this.editor.setState('selection.ids', ids);
     this.editor.setState('transformer', { x: 0, y: 0, scaleX: 1, scaleY: 1, rotation: 0 });
@@ -57,13 +53,13 @@ export class SelectionManager {
   private syncSelection(ids: string[]) {
     if (!this.transformer || !this.selectionGroup) return;
 
-    const currentIds = this.selectionGroup.getChildren().map(child => child.id());
-    const addedIds = ids.filter(id => !currentIds.includes(id));
-    const removedIds = currentIds.filter(id => !ids.includes(id));
+    const currentIds = this.selectionGroup.getChildren().map((child) => child.id());
+    const addedIds = ids.filter((id) => !currentIds.includes(id));
+    const removedIds = currentIds.filter((id) => !ids.includes(id));
 
     // 제거된 shapes 처리: 원래 layer로 이동
     if (removedIds.length > 0) {
-      removedIds.forEach(id => {
+      removedIds.forEach((id) => {
         const shape = this.editor.getShapeNode(id);
         if (!shape) return;
         shape.moveTo(this.editor.canvas.layer);
@@ -72,7 +68,7 @@ export class SelectionManager {
 
     // 추가된 shapes 처리: selectionGroup으로 이동
     if (addedIds.length > 0) {
-      addedIds.forEach(id => {
+      addedIds.forEach((id) => {
         const shape = this.editor.getShapeNode(id);
         if (!shape) return;
         shape.moveTo(this.selectionGroup);
@@ -97,7 +93,7 @@ export class SelectionManager {
 
   private handleTransformStart() {
     if (!this.transformer) return;
-   
+
     this.editor.startTransaction();
   }
 
@@ -106,7 +102,7 @@ export class SelectionManager {
    */
   private handleTransformEnd() {
     if (!this.transformer || !this.selectionGroup) return;
-    
+
     const attrs = {
       x: this.selectionGroup.x(),
       y: this.selectionGroup.y(),
@@ -114,18 +110,16 @@ export class SelectionManager {
       scaleY: this.selectionGroup.getAttr('scaleY'),
       rotation: this.selectionGroup.getAttr('rotation'),
     };
-    
+
     try {
       this.editor.setState('transformer', attrs);
 
       this.editor.commitTransaction();
-      
     } catch (error) {
       this.editor.cancelTransaction();
       throw error;
-    } 
+    }
   }
-
 
   private _createTransformer() {
     if (this.transformer) return;
@@ -143,7 +137,7 @@ export class SelectionManager {
     this.transformer.on('transformend dragend', () => {
       this.handleTransformEnd();
     });
-    
+
     this.editor.canvas.topLayer.add(this.transformer);
   }
 

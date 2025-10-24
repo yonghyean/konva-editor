@@ -1,6 +1,6 @@
-import type { IconName } from "lucide-react/dynamic";
-import type { MouseEvent } from "react";
-import { createContext, useContext } from "react";
+import type { IconName } from 'lucide-react/dynamic';
+import type { MouseEvent } from 'react';
+import { createContext, useContext } from 'react';
 
 type ToolsContextValue = Record<string, ToolItem>;
 
@@ -17,7 +17,7 @@ export function useTools() {
   const context = useContext(ToolsContext);
 
   if (!context) {
-    throw Error("useTools must be used within a ToolProvider");
+    throw Error('useTools must be used within a ToolProvider');
   }
 
   return context;

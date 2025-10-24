@@ -1,6 +1,6 @@
-import type { IconName } from "lucide-react/dynamic";
-import type { MouseEvent } from "react";
-import { createContext, useContext } from "react";
+import type { IconName } from 'lucide-react/dynamic';
+import type { MouseEvent } from 'react';
+import { createContext, useContext } from 'react';
 
 export interface ActionItem {
   id: string;
@@ -17,7 +17,7 @@ export function useActions() {
   const context = useContext(ActionsContext);
 
   if (!context) {
-    throw Error("useActions must be used within a ActionProvider");
+    throw Error('useActions must be used within a ActionProvider');
   }
 
   return context;

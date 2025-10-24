@@ -1,7 +1,7 @@
-import type { ReactNode } from "react";
-import { useMemo } from "react";
-import { useEditor } from "@/hooks/useEditor";
-import { ToolsContext, type ToolItem } from "@/hooks/useTools";
+import type { ReactNode } from 'react';
+import { useMemo } from 'react';
+import { useEditor } from '@/hooks/useEditor';
+import { ToolsContext, type ToolItem } from '@/hooks/useTools';
 
 interface ToolProviderProps {
   children: ReactNode;
@@ -13,51 +13,51 @@ export function ToolProvider({ children }: ToolProviderProps) {
   const value = useMemo(() => {
     const tools: ToolItem[] = [
       {
-        tool: "select",
-        label: "select",
-        iconName: "mouse-pointer-2",
+        tool: 'select',
+        label: 'select',
+        iconName: 'mouse-pointer-2',
         onSelect: () => {
-          editor.setCurrentTool("select");
+          editor.setCurrentTool('select');
         },
       },
       {
-        tool: "brush",
-        label: "brush",
-        iconName: "brush",
+        tool: 'brush',
+        label: 'brush',
+        iconName: 'brush',
         onSelect: () => {
-          editor.setCurrentTool("brush");
+          editor.setCurrentTool('brush');
         },
       },
       {
-        tool: "eraser",
-        label: "eraser",
-        iconName: "eraser",
+        tool: 'eraser',
+        label: 'eraser',
+        iconName: 'eraser',
         onSelect: () => {
-          editor.setCurrentTool("eraser");
+          editor.setCurrentTool('eraser');
         },
       },
       {
-        tool: "rect",
-        label: "rect",
-        iconName: "square",
+        tool: 'rect',
+        label: 'rect',
+        iconName: 'square',
         onSelect: () => {
-          editor.setCurrentTool("rect");
+          editor.setCurrentTool('rect');
         },
       },
       {
-        tool: "circle",
-        label: "circle",
-        iconName: "circle",
+        tool: 'circle',
+        label: 'circle',
+        iconName: 'circle',
         onSelect: () => {
-          editor.setCurrentTool("circle");
+          editor.setCurrentTool('circle');
         },
       },
       {
-        tool: "diamond",
-        label: "diamond",
-        iconName: "diamond",
+        tool: 'diamond',
+        label: 'diamond',
+        iconName: 'diamond',
         onSelect: () => {
-          editor.setCurrentTool("diamond");
+          editor.setCurrentTool('diamond');
         },
       },
     ];

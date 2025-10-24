@@ -1,9 +1,9 @@
-import { EditorProvider } from "@/providers/EditorProvider";
-import { useEditor } from "@/hooks/useEditor";
-import { Toolbar } from "./components/toolbar";
-import { UndoRedoGroup } from "./components/actions/UndoRedoGroup";
-import { ActionsProvider } from "@/providers/ActionsProvider";
-import { StylePannel } from "./components/pannels/StylePannel";
+import { EditorProvider } from '@/providers/EditorProvider';
+import { useEditor } from '@/hooks/useEditor';
+import { Toolbar } from './components/toolbar';
+import { UndoRedoGroup } from './components/actions/UndoRedoGroup';
+import { ActionsProvider } from '@/providers/ActionsProvider';
+import { StylePannel } from './components/pannels/StylePannel';
 
 function App() {
   return (

@@ -1,5 +1,5 @@
-import { ToolProvider } from "@/providers/ToolsProvider";
-import { ToolButton } from "./ToolButton";
+import { ToolProvider } from '@/providers/ToolsProvider';
+import { ToolButton } from './ToolButton';
 
 export function Toolbar() {
   return (

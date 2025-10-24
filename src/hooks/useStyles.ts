@@ -1,6 +1,6 @@
-import type { IconName } from "lucide-react/dynamic";
-import type { MouseEvent } from "react";
-import { createContext, useContext } from "react";
+import type { IconName } from 'lucide-react/dynamic';
+import type { MouseEvent } from 'react';
+import { createContext, useContext } from 'react';
 
 type StylesContextValue = {
   onValueChange: (value: string) => void;
@@ -19,7 +19,7 @@ export function useStyles() {
   const context = useContext(StylesContext);
 
   if (!context) {
-    throw Error("useStyles must be used within a StyleProvider");
+    throw Error('useStyles must be used within a StyleProvider');
   }
 
   return context;

@@ -1,11 +1,15 @@
-import type { Editor } from "..";
-import { diff } from "just-diff";
-import type { EditorState } from "../state";
-import { get } from "lodash-es";
+import type { Editor } from '..';
+import { diff } from 'just-diff';
+import type { EditorState } from '../state';
+import { get } from 'lodash-es';
 
-type Operation = "add" | "replace" | "remove";
+type Operation = 'add' | 'replace' | 'remove';
 
-interface Patch { op: Operation; path: Array<string | number>; value: any }
+interface Patch {
+  op: Operation;
+  path: Array<string | number>;
+  value: any;
+}
 interface HistoryState {
   patches: Patch[];
   inversePatches: Patch[];
@@ -20,8 +24,12 @@ export class HistoryManager {
     this.editor = editor;
   }
 
-  record(prevState: EditorState, nextState: EditorState, options: { keepRedoStack: boolean } = { keepRedoStack: false }) {
-    const diff= this.diff(prevState, nextState);
+  record(
+    prevState: EditorState,
+    nextState: EditorState,
+    options: { keepRedoStack: boolean } = { keepRedoStack: false },
+  ) {
+    const diff = this.diff(prevState, nextState);
     if (diff.patches.length === 0) return;
     this.undoStack.push(diff);
     if (!options.keepRedoStack) {
@@ -44,7 +52,7 @@ export class HistoryManager {
 
     this.applyPatches(entry.inversePatches);
     this.redoStack.push(entry);
-    console.log("undo stack", this.undoStack);
+    console.log('undo stack', this.undoStack);
   }
 
   canRedo(): boolean {
@@ -57,7 +65,7 @@ export class HistoryManager {
 
     this.applyPatches(entry.patches);
     this.undoStack.push(entry);
-    console.log("redo stack", this.redoStack);
+    console.log('redo stack', this.redoStack);
   }
 
   clear() {
@@ -68,15 +76,18 @@ export class HistoryManager {
   private diff(prev: EditorState, next: EditorState) {
     const delta = diff(prev, next);
     // inversePatches는 prev에서 next로 변경된 부분을 저장
-    return delta.reduce((acc, patch) => {
-      acc.patches.push(patch);
-      acc.inversePatches.push({
-        op: patch.op === "add" ? "remove" : patch.op === "remove" ? "add" : patch.op,
-        path: patch.path,
-        value: get(prev, patch.path),
-      });
-      return acc;
-    }, { patches: [] as Patch[], inversePatches: [] as Patch[] });
+    return delta.reduce(
+      (acc, patch) => {
+        acc.patches.push(patch);
+        acc.inversePatches.push({
+          op: patch.op === 'add' ? 'remove' : patch.op === 'remove' ? 'add' : patch.op,
+          path: patch.path,
+          value: get(prev, patch.path),
+        });
+        return acc;
+      },
+      { patches: [] as Patch[], inversePatches: [] as Patch[] },
+    );
   }
 
   private applyPatches(patches: Patch[]): void {

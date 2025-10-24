@@ -1,15 +1,15 @@
-import Konva from "konva";
-import type { Editor } from "..";
-import { BaseTool } from "./Tool";
+import Konva from 'konva';
+import type { Editor } from '..';
+import { BaseTool } from './Tool';
 
 export class SelectTool extends BaseTool {
-  name = "select";
+  name = 'select';
   /**
    * idle = not interacting
    * transforming =
    * dragging = dragging selected shapes
    */
-  state: "idle" | "selection" | "transforming" | "dragging" = "idle";
+  state: 'idle' | 'selection' | 'transforming' | 'dragging' = 'idle';
 
   selectionBox: Konva.Rect | null = null;
 
@@ -38,10 +38,9 @@ export class SelectTool extends BaseTool {
     if (!this.selectionBox) return;
     if (e.target.getParent()?.className === 'Transformer') return;
 
-    this.state = "dragging";
+    this.state = 'dragging';
 
-    this.lastPointerPosition =
-      this.editor.canvas.stage.getPointerPosition() || { x: 0, y: 0 };
+    this.lastPointerPosition = this.editor.canvas.stage.getPointerPosition() || { x: 0, y: 0 };
 
     this.selectionBox.setAttrs({
       x: this.lastPointerPosition.x,
@@ -89,10 +88,7 @@ export class SelectTool extends BaseTool {
     Object.values(shapes).forEach((shape) => {
       const shapeNode = this.editor.getShapeNode(shape.id);
       if (!shapeNode) return;
-      const intersected = Konva.Util.haveIntersection(
-        box,
-        shapeNode.getClientRect()
-      );
+      const intersected = Konva.Util.haveIntersection(box, shapeNode.getClientRect());
       if (intersected) {
         selectedIds.push(shape.id);
       }
@@ -101,13 +97,12 @@ export class SelectTool extends BaseTool {
     this.editor.setSelectedShapes(selectedIds);
   }
 
-
   private _createSelectionBox() {
     if (this.selectionBox) return;
 
     this.selectionBox = new Konva.Rect({
-      fill: "rgba(0,0,255,0.1)",
-      stroke: "blue",
+      fill: 'rgba(0,0,255,0.1)',
+      stroke: 'blue',
       strokeWidth: 1,
       listening: false,
       visible: false,

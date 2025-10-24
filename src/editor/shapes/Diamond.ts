@@ -1,6 +1,6 @@
-import Konva from "konva";
-import type { Context } from "konva/lib/Context";
-import { _registerNode } from "konva/lib/Global";
+import Konva from 'konva';
+import type { Context } from 'konva/lib/Context';
+import { _registerNode } from 'konva/lib/Global';
 
 export interface DiamondConfig extends Konva.ShapeConfig {
   width: number;

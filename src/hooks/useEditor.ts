@@ -1,6 +1,6 @@
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import type { StorePath } from "@/editor/store/Store";
-import type { Editor } from "@/editor";
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import type { StorePath } from '@/editor/store/Store';
+import type { Editor } from '@/editor';
 
 export const EditorContext = createContext<Editor | null>(null);
 
@@ -8,7 +8,7 @@ export function useEditor() {
   const context = useContext(EditorContext);
 
   if (!context) {
-    throw new Error("useEditor must be used within a EditorProvider");
+    throw new Error('useEditor must be used within a EditorProvider');
   }
 
   return context;

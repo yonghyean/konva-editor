@@ -1,7 +1,7 @@
-import Konva from "konva";
+import Konva from 'konva';
 
-export interface CanvasOptions extends Omit<Konva.StageConfig, "container"> {
-containerId: string;
+export interface CanvasOptions extends Omit<Konva.StageConfig, 'container'> {
+  containerId: string;
 }
 
 export class Canvas {
@@ -15,10 +15,10 @@ export class Canvas {
       ...opts,
     });
     this.layer = new Konva.Layer({
-      name: "layer",
+      name: 'layer',
     });
     this.topLayer = new Konva.Layer({
-      name: "topLayer",
+      name: 'topLayer',
     });
     this.stage.add(this.layer, this.topLayer);
   }

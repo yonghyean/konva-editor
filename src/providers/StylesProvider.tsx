@@ -1,6 +1,6 @@
-import type { ReactNode } from "react";
-import { useEditor } from "@/hooks/useEditor";
-import { StylesContext } from "@/hooks/useStyles";
+import type { ReactNode } from 'react';
+import { useEditor } from '@/hooks/useEditor';
+import { StylesContext } from '@/hooks/useStyles';
 
 interface StylesProviderProps {
   children: ReactNode;

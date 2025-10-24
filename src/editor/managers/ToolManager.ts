@@ -1,13 +1,13 @@
-import type Konva from "konva";
-import type { Editor } from "..";
-import { BrushTool } from "../tools/BrushTool";
-import type { Tool } from "../tools/Tool";
-import { EraserTool } from "../tools/EraserTool";
-import { SelectTool } from "../tools/SelectTool";
-import { RectTool } from "../tools/RectTool";
-import { CircleTool } from "../tools/CircleTool";
-import { DiamondTool } from "../tools/DiamondTool";
-import { produce } from "immer";
+import type Konva from 'konva';
+import type { Editor } from '..';
+import { BrushTool } from '../tools/BrushTool';
+import type { Tool } from '../tools/Tool';
+import { EraserTool } from '../tools/EraserTool';
+import { SelectTool } from '../tools/SelectTool';
+import { RectTool } from '../tools/RectTool';
+import { CircleTool } from '../tools/CircleTool';
+import { DiamondTool } from '../tools/DiamondTool';
+import { produce } from 'immer';
 
 export class ToolManager {
   private editor: Editor;
@@ -29,19 +29,19 @@ export class ToolManager {
 
   changeTool(tool: string) {
     if (!this.tools.has(tool)) {
-      throw new Error("Tool not found");
+      throw new Error('Tool not found');
     }
-    
+
     // 이전 툴의 onExit 호출
     const prevTool = this.tools.get(this.currentTool);
     if (prevTool) {
       prevTool.onExit();
     }
-    
+
     // 새로운 툴의 onEnter 호출
     const nextTool = this.tools.get(tool)!;
     nextTool.onEnter();
-    
+
     // 내부 상태 업데이트
     this.currentTool = tool;
   }

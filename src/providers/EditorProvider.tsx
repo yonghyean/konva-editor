@@ -1,7 +1,7 @@
-import type { ReactNode } from "react";
-import { useEffect, useState } from "react";
-import { Editor } from "@/editor";
-import { EditorContext } from "@/hooks/useEditor";
+import type { ReactNode } from 'react';
+import { useEffect, useState } from 'react';
+import { Editor } from '@/editor';
+import { EditorContext } from '@/hooks/useEditor';
 
 interface EditorProviderProps {
   children: ReactNode;
@@ -13,7 +13,7 @@ export function EditorProvider({ children }: EditorProviderProps) {
   useEffect(() => {
     const instance = new Editor({
       canvas: {
-        containerId: "canvas-container",
+        containerId: 'canvas-container',
         width: innerWidth,
         height: innerHeight,
       },
