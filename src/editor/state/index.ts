@@ -54,8 +54,8 @@ export type ToolState = {
 };
 
 export type StyleState = {
-  strokeColor: string;
-  fillColor: string;
+  stroke: string;
+  fill: string;
   strokeWidth: number;
   opacity: number;
 };

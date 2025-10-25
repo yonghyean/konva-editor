@@ -26,7 +26,7 @@ export class BrushTool extends BaseTool {
       className: 'Line',
       points: initialPoints,
       fill: '',
-      stroke: styleState.strokeColor,
+      stroke: styleState.stroke,
       strokeWidth: styleState.strokeWidth,
       opacity: styleState.opacity,
       originX: 'center',

@@ -6,7 +6,7 @@ import { ShapeManager } from './managers/ShapeManager';
 import { ToolManager } from './managers/ToolManager';
 import { TransactionManager } from './managers/TransactionManager';
 import { Store, type PathValue, type PropertyPath } from './store/Store';
-import type { EditorState, Shape } from './state';
+import type { EditorState, Shape, StyleState } from './state';
 import { Diamond } from './shapes/Diamond';
 
 interface EditorOptions {
@@ -68,7 +68,6 @@ export class Editor {
   setSelectedShapes(ids: string[]) {
     // 히스토리가 최신이면 히스토리 초기화
     const canRedo = this.hisotryManager.canRedo();
-    console.log('ignoreHistory', canRedo && ids.length === 0);
     this.run(
       () => {
         this.selectionManager.setSelectedShapes(ids);
@@ -77,18 +76,42 @@ export class Editor {
     );
   }
 
-  setStyleForSelectedShapes(value: string) {
-    // 선택된 도형 찾기
+  /**
+   * 선택된 도형들의 공통 스타일을 가져옴
+   */
+  getSharedStyle<T extends PropertyPath<StyleState>>(path: T) {
     const shapes = this.getSelectedShapes();
+    if (!shapes.length) return null;
+    const allSame = shapes.every((shape) => shape[path] === shapes[0][path]);
+    if (!allSame) return null;
+    return shapes[0][path];
+  }
+
+  setStyleForSelectedShapes<T extends PropertyPath<StyleState>>(path: T, value: PathValue<StyleState, T>) {
+    const shapes = this.getSelectedShapes();
+
     this.run(() => {
-      this.setState('style.strokeColor', value);
-      this.updateShapes(shapes.map((shape) => ({ ...shape, stroke: value })));
+      const stylePath = `style.${path}` as PropertyPath<EditorState>;
+      this.setState(stylePath, value as PathValue<EditorState, typeof stylePath>);
+
+      if (!shapes.length) return;
+
+      const updates = shapes
+        .map((shape) => ({
+          ...shape,
+          [path]: value,
+        }))
+        .filter((shape): shape is Shape => Boolean(shape));
+
+      if (updates.length) {
+        this.updateShapes(updates);
+      }
     });
   }
 
-  setStyleForNextShapes(value: string) {
-    this.setState('style.strokeColor', value);
-    this.setState('style.fillColor', value);
+  setStyleForNextShapes<T extends PropertyPath<StyleState>>(path: T, value: PathValue<StyleState, T>) {
+    const stylePath = `style.${path}` as PropertyPath<EditorState>;
+    this.setState(stylePath, value as PathValue<EditorState, typeof stylePath>);
   }
 
   // 트랜잭션 실행
@@ -104,9 +127,9 @@ export class Editor {
 
     try {
       const result = fn();
-      if (!keepRedoStack) {
-        this.commitTransaction();
-      }
+
+      this.commitTransaction();
+
       return result;
     } catch (error) {
       this.cancelTransaction();

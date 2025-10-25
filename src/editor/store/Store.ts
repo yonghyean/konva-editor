@@ -26,8 +26,8 @@ const defaultInitialState: EditorState = {
   shapes: {},
   tool: { current: 'select', locked: false, mode: 'idle' },
   style: {
-    strokeColor: '#000000',
-    fillColor: '#ffffff00',
+    stroke: '#000000',
+    fill: 'transparent',
     strokeWidth: 2,
     opacity: 1,
   },
