@@ -1,5 +1,6 @@
-import { get as _get, set as _set } from 'lodash-es';
+import { get as _get, set as _set, unset as _unset } from 'lodash-es';
 import type { EditorState } from '../state';
+import type { Record as StateRecord, RecordType } from '../types/record';
 
 export type PropertyPath<T extends Record<string, unknown>> = {
   [K in keyof T & string]: T[K] extends Record<string, unknown> ? K | `${K}.${PropertyPath<T[K]>}` : K;
@@ -31,7 +32,6 @@ const defaultInitialState: EditorState = {
     strokeWidth: 2,
     opacity: 1,
   },
-  transformer: { x: 0, y: 0, scaleX: 1, scaleY: 1, rotation: 0 },
   canUndo: false,
   canRedo: false,
 };
@@ -48,7 +48,6 @@ export class Store<
 
   constructor(initialState?: Partial<TState>) {
     this.state = { ...defaultInitialState, ...initialState } as TState;
-    console.log('Store constructor', this.state);
   }
 
   // path 기반 getter
@@ -61,11 +60,13 @@ export class Store<
 
   // path 기반 setter (변경 시 해당 path의 리스너 실행)
   set(path: TPath, value?: PathValue<TState, TPath>): void {
-    this.state = _set(this.state, path, value);
-
     if (!value) {
+      _unset(this.state, path);
       this.listeners.delete(path);
+      return;
     }
+
+    this.state = _set(this.state, path, value);
   }
 
   // 스냅샷 생성 (run에서 사용)
@@ -123,5 +124,56 @@ export class Store<
   // 모든 리스너 제거
   clearListeners(): void {
     this.listeners.clear();
+  }
+
+  /**
+   * Record 생성 메서드
+   * @param type Record 타입 (added | updated | removed)
+   * @param path 상태 경로
+   * @param value 새 값 (removed의 경우 현재 값이 자동으로 설정됨)
+   * @returns 생성된 Record
+   */
+  createRecord(type: RecordType, path: TPath, value?: PathValue<TState, TPath>): StateRecord {
+    const currentValue = this.get(path);
+
+    switch (type) {
+      case 'added':
+        return { type: 'added', path, value };
+      case 'updated':
+        return { type: 'updated', path, from: currentValue, to: value };
+      case 'removed':
+        return { type: 'removed', path, value: currentValue };
+      default:
+        throw new Error(`Unknown record type: ${type}`);
+    }
+  }
+
+  /**
+   * Record 배열을 상태에 반영
+   */
+  put(records: StateRecord[]): void {
+    for (const record of records) {
+      this.apply(record);
+
+      const affectedPaths = new Set(records.map((r) => r.path));
+      affectedPaths.forEach((path) => this.emit(path as TPath));
+    }
+  }
+
+  /**
+   * 단일 Record를 상태에 반영
+   */
+  private apply(record: StateRecord): void {
+    switch (record.type) {
+      case 'added':
+        this.set(record.path as TPath, record.value as PathValue<TState, TPath>);
+        break;
+      case 'updated':
+        this.set(record.path as TPath, record.to as PathValue<TState, TPath>);
+        break;
+      case 'removed':
+        this.set(record.path as TPath, undefined);
+        break;
+    }
   }
 }

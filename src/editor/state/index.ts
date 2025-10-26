@@ -1,20 +1,11 @@
 import type Konva from 'konva';
 
-export type TransformerState = {
-  x: number;
-  y: number;
-  scaleX: number;
-  scaleY: number;
-  rotation: number;
-};
-
 export type EditorState = {
   camera: CameraState;
   selection: SelectionState;
   shapes: ShapeState;
   tool: ToolState;
   style: StyleState;
-  transformer: TransformerState;
 
   canUndo: boolean;
   canRedo: boolean;

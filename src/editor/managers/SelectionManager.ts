@@ -1,6 +1,5 @@
 import Konva from 'konva';
 import type { Editor } from '..';
-import type { TransformerState } from '../state';
 
 export class SelectionManager {
   private editor: Editor;
@@ -10,50 +9,27 @@ export class SelectionManager {
   constructor(editor: Editor) {
     this.editor = editor;
 
-    // store 리스너 등록
-
-    this.editor.store.listen('transformer', (attrs) => {
-      this.syncTransformer(attrs);
-    });
+    this._createTransformer();
+    this._createSelectionGroup();
 
     this.editor.store.listen('selection.ids', (ids) => {
       this.syncSelection(ids);
     });
-
-    this._createTransformer();
-    this._createSelectionGroup();
   }
 
   /**
-   * 선택된 shapes 설정
-   */
-  setSelectedShapes(ids: string[]) {
-    if (!this.selectionGroup) return;
-    const shapes = this.editor.getSelectedShapes();
-
-    shapes.forEach((shape) => {
-      // 업데이트 transform
-      const shapeNode = this.editor.getShapeNode(shape.id);
-      if (!shapeNode) return;
-      const transform = shapeNode.getAbsoluteTransform();
-      this.editor.updateShape({
-        id: shape.id,
-        ...transform.decompose(),
-      });
-    });
-
-    this.editor.setState('selection.ids', ids);
-    this.editor.setState('transformer', { x: 0, y: 0, scaleX: 1, scaleY: 1, rotation: 0 });
-  }
-  /**
-   * selection.ids 변경 시 호출
-   * - ids 추가: shapes를 selectionGroup으로 이동, transformer nodes 업데이트
-   * - ids 제거: selectionGroup.getAbsoluteTransform()로 최종 위치 계산 → shapes 업데이트 → layer로 복귀
+   * 선택된 shapes를 동기화합니다. Konva.Transformer와 Konva.Group을 업데이트합니다.
+   * @param ids 선택된 shapes의 id 배열
    */
   private syncSelection(ids: string[]) {
     if (!this.transformer || !this.selectionGroup) return;
 
-    const currentIds = this.selectionGroup.getChildren().map((child) => child.id());
+    // null이 아닌 유효한 id만 필터링
+    const currentIds = this.selectionGroup
+      .getChildren()
+      .map((child) => child.id())
+      .filter((id): id is string => id !== null && id !== undefined);
+
     const addedIds = ids.filter((id) => !currentIds.includes(id));
     const removedIds = currentIds.filter((id) => !ids.includes(id));
 
@@ -83,14 +59,6 @@ export class SelectionManager {
     }
   }
 
-  /**
-   * store.transformer 변경 시 호출
-   */
-  private syncTransformer(attrs: TransformerState) {
-    if (!this.transformer || !this.selectionGroup) return;
-    this.selectionGroup.setAttrs(attrs);
-  }
-
   private handleTransformStart() {
     if (!this.transformer) return;
 
@@ -98,21 +66,41 @@ export class SelectionManager {
   }
 
   /**
-   * transformer 이벤트 처리: store.transformer만 업데이트 (shapes 미변경)
+   * transformer 이벤트 처리: 각 child shape의 absoluteTransform을 계산하여 store에 즉시 업데이트
    */
   private handleTransformEnd() {
     if (!this.transformer || !this.selectionGroup) return;
 
-    const attrs = {
-      x: this.selectionGroup.x(),
-      y: this.selectionGroup.y(),
-      scaleX: this.selectionGroup.getAttr('scaleX'),
-      scaleY: this.selectionGroup.getAttr('scaleY'),
-      rotation: this.selectionGroup.getAttr('rotation'),
-    };
+    const children = this.selectionGroup.getChildren();
+
+    const updates = children
+      .filter((child) => child.id() !== null && child.id() !== undefined)
+      .map((child) => {
+        // child의 absoluteTransform을 직접 계산 (group 내에서의 최종 절대 위치)
+        const absoluteTransform = child.getAbsoluteTransform();
+        const decomposed = absoluteTransform.decompose();
+
+        // 현재 shape의 className을 가져와서 Shape 타입에 맞게 구성
+        const currentShape = this.editor.getShape(child.id()!);
+
+        return {
+          id: child.id()!,
+          className: currentShape.className,
+          ...decomposed,
+        };
+      });
 
     try {
-      this.editor.setState('transformer', attrs);
+      this.editor.updateShapes(updates);
+
+      // selectionGroup transform 초기화
+      this.selectionGroup.setAttrs({
+        x: 0,
+        y: 0,
+        scaleX: 1,
+        scaleY: 1,
+        rotation: 0,
+      });
 
       this.editor.commitTransaction();
     } catch (error) {

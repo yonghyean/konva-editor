@@ -1,6 +1,7 @@
 import Konva from 'konva';
 import type { Editor } from '..';
 import { BaseShapeTool } from './BaseShapeTool';
+import type { Shape } from '../state';
 
 export class RectTool extends BaseShapeTool {
   name = 'rect';
@@ -9,14 +10,14 @@ export class RectTool extends BaseShapeTool {
     super(editor);
   }
 
-  protected createInitialShape(pointer: { x: number; y: number }, styleState: any): string {
+  protected createInitialShape(pointer: { x: number; y: number }, styleState: any): Shape {
     return this.editor.createShape({
       className: 'Rect',
       x: pointer.x,
       y: pointer.y,
       width: 0,
       height: 0,
-      fill: styleState.fill,
+      fill: styleState.fillColor,
       stroke: styleState.stroke,
       strokeWidth: styleState.strokeWidth,
       opacity: styleState.opacity,
@@ -26,7 +27,7 @@ export class RectTool extends BaseShapeTool {
   }
 
   protected updateShapeGeometry(startPoint: { x: number; y: number }, currentPoint: { x: number; y: number }): void {
-    if (!this.shapeId) return;
+    if (!this.shape) return;
 
     const x = Math.min(startPoint.x, currentPoint.x);
     const y = Math.min(startPoint.y, currentPoint.y);
@@ -34,7 +35,7 @@ export class RectTool extends BaseShapeTool {
     const height = Math.abs(currentPoint.y - startPoint.y);
 
     this.editor.updateShape({
-      id: this.shapeId,
+      id: this.shape.id,
       x,
       y,
       width,

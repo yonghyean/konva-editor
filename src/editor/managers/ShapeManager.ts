@@ -13,75 +13,36 @@ export class ShapeManager {
     });
   }
 
-  createShape(attrs: Omit<Shape, 'id'>): string {
-    return this.createShapes([attrs])[0];
+  getShapeNode(id: string): Konva.Shape {
+    const shape = this.shapes.get(id);
+    if (!shape) throw new Error(`Shape with id ${id} not found`);
+    return shape;
   }
 
-  createShapes(shapes: Omit<Shape, 'id'>[]): string[] {
-    const createdIds: string[] = [];
-
-    for (const attrs of shapes) {
-      const id = this.generateId();
-      const shape = { id, ...attrs } as Shape;
-
-      // 스토어 업데이트
-      this.root.setState(`shapes.${id}`, shape);
-
-      createdIds.push(id);
-    }
-
-    return createdIds;
+  createShape(shape: Omit<Shape, 'id'>): Shape {
+    const createdShape = { id: this.generateId(), ...shape } as Shape;
+    return createdShape;
   }
 
-  updateShape(attrs: Partial<Shape>): void {
-    return this.updateShapes([attrs]);
+  updateShape(shape: Partial<Shape>, partialShape: Partial<Shape>): Shape {
+    const updatedShape = { ...shape, ...partialShape } as Shape;
+    return updatedShape;
   }
 
-  updateShapes(attrs: Partial<Shape>[]): void {
-    if (!attrs.length) return;
-
-    for (const attr of attrs) {
-      if (!attr.id) continue;
-      const existing = this.shapes.get(attr.id);
-      if (!existing) continue;
-
-      const updated = { ...existing.attrs, ...attr };
-
-      // 스토어 업데이트
-      this.root.setState(`shapes.${attr.id}`, updated as Shape);
-    }
-  }
-
-  removeShape(id: string): void {
-    this.removeShapes([id]);
-  }
-
-  removeShapes(ids: string[]): void {
-    if (!ids.length) return;
-
-    for (const id of ids) {
-      // 노드 제거
-      this.removeShapeNode(id);
-
-      // 스토어 업데이트
-      this.root.setState(`shapes.${id}`, undefined);
-    }
-  }
-
-  getShapeNode<T extends Konva.Shape = Konva.Shape>(id: string): T | null {
-    const node = this.shapes.get(id);
-    if (!node) return null;
-    return node as T;
-  }
-
-  syncShapes(shapes: ShapeState): void {
+  private syncShapes(shapes: ShapeState): void {
     for (const [id, shape] of Object.entries(shapes)) {
-      if (!this.shapes.has(id) && shape) {
+      // this.shapes에 없으면 도형을 생성
+      if (!this.shapes.has(id)) {
         this.createShapeNode(shape);
-      } else if (shape) {
-        this.updateShapeNode(shape);
       } else {
-        // 사라진 도형은 shape가 undefined이기 때문에 removeShapeNode를 호출
+        // this.shapes에 있으면 도형을 업데이트
+        this.updateShapeNode(shape);
+      }
+    }
+
+    // this.shapes에 있는 도형이 없는 도형은 삭제
+    for (const id of this.shapes.keys()) {
+      if (!shapes[id]) {
         this.removeShapeNode(id);
       }
     }

@@ -1,9 +1,10 @@
 import type { Editor } from '..';
+import type { Shape } from '../state';
 import { BaseTool } from './Tool';
 
 export abstract class BaseShapeTool extends BaseTool {
   state: 'idle' | 'drawing' = 'idle';
-  shapeId: string | null = null;
+  shape: Shape | null = null;
   startPoint: { x: number; y: number } | null = null;
 
   constructor(editor: Editor) {
@@ -23,12 +24,12 @@ export abstract class BaseShapeTool extends BaseTool {
     this.editor.startTransaction();
 
     // 초기 도형 생성 (트랜잭션 내에서)
-    this.shapeId = this.createInitialShape(pointer, styleState);
+    this.shape = this.createInitialShape(pointer, styleState);
   }
 
   onPointerMove() {
     if (this.state !== 'drawing') return;
-    if (!this.shapeId || !this.startPoint) return;
+    if (!this.shape || !this.startPoint) return;
 
     const pointer = this.editor.canvas.stage.getPointerPosition();
     if (!pointer) return;
@@ -39,12 +40,12 @@ export abstract class BaseShapeTool extends BaseTool {
 
   onPointerUp() {
     if (this.state !== 'drawing') return;
-    if (!this.shapeId) return;
+    if (!this.shape) return;
 
     // 트랜잭션 커밋
     this.editor.commitTransaction();
 
-    this.shapeId = null;
+    this.shape = null;
     this.startPoint = null;
     this.state = 'idle';
   }
@@ -55,7 +56,7 @@ export abstract class BaseShapeTool extends BaseTool {
    * @param styleState 현재 스타일 상태
    * @returns 생성된 도형의 ID
    */
-  protected abstract createInitialShape(pointer: { x: number; y: number }, styleState: any): string;
+  protected abstract createInitialShape(pointer: { x: number; y: number }, styleState: any): Shape;
 
   /**
    * 포인터 이동에 따라 도형의 기하학적 속성을 업데이트합니다.

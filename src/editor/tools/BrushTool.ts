@@ -1,12 +1,12 @@
-import Konva from 'konva';
 import type { Editor } from '..';
 import { BaseTool } from './Tool';
+import type { Shape } from '../state';
 
 export class BrushTool extends BaseTool {
   name = 'brush';
   state: 'idle' | 'drawing' = 'idle';
 
-  lineId: string | null = null;
+  line: Shape | null = null;
 
   constructor(editor: Editor) {
     super(editor);
@@ -22,7 +22,7 @@ export class BrushTool extends BaseTool {
     this.editor.startTransaction();
 
     // shape 생성 (트랜잭션 내에서)
-    this.lineId = this.editor.createShape({
+    this.line = this.editor.createShape({
       className: 'Line',
       points: initialPoints,
       fill: '',
@@ -39,27 +39,25 @@ export class BrushTool extends BaseTool {
 
   onPointerMove() {
     if (this.state !== 'drawing') return;
-    if (!this.lineId) return;
+    if (!this.line) return;
 
-    // drawing 중: store 업데이트 없이 노드만 직접 업데이트
-    const line = this.editor.getShapeNode<Konva.Line>(this.lineId);
     const pos = this.editor.canvas.stage.getPointerPosition();
-    if (!line || !pos) return;
+    if (!pos || !this.line) return;
 
-    this.editor.updateShape({
-      id: this.lineId,
-      points: [...line.points(), pos.x, pos.y],
+    this.line = this.editor.updateShape({
+      ...this.line,
+      points: this.line.points.concat([pos.x, pos.y]),
     });
   }
 
   onPointerUp() {
     if (this.state !== 'drawing') return;
-    if (!this.lineId) return;
+    if (!this.line) return;
 
     // 트랜잭션 커밋
     this.editor.commitTransaction();
 
-    this.lineId = null;
+    this.line = null;
     this.state = 'idle';
   }
 }

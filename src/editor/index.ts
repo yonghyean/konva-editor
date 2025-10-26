@@ -7,6 +7,7 @@ import { ToolManager } from './managers/ToolManager';
 import { TransactionManager } from './managers/TransactionManager';
 import { Store, type PathValue, type PropertyPath } from './store/Store';
 import type { EditorState, Shape, StyleState } from './state';
+import type { Record as StateRecord } from './types/record';
 import { Diamond } from './shapes/Diamond';
 
 interface EditorOptions {
@@ -47,7 +48,7 @@ export class Editor {
     this.canvas.stage.on('pointerout', this.toolManager.handlePointerOut.bind(this.toolManager));
   }
 
-  // store 업데이트
+  // store 업데이트 (내부용)
   setState<T extends PropertyPath<EditorState>>(path: T, value?: PathValue<EditorState, T>): void {
     this.store.set(path, value);
     this.store.emit(path);
@@ -61,19 +62,17 @@ export class Editor {
   }
 
   getSelectedShapes() {
-    const ids = this.getState('selection.ids');
-    return ids.map((id) => this.getShape(id));
+    const ids = this.getState('selection.ids') as string[];
+    return ids.map((id: string) => this.getShape(id));
   }
 
   setSelectedShapes(ids: string[]) {
-    // 히스토리가 최신이면 히스토리 초기화
-    const canRedo = this.hisotryManager.canRedo();
-    this.run(
-      () => {
-        this.selectionManager.setSelectedShapes(ids);
-      },
-      { keepRedoStack: canRedo && ids.length === 0 },
-    );
+    this.run(() => {
+      // 1. Store 업데이트
+      const record = this.store.createRecord('updated', 'selection.ids', ids);
+      this.store.put([record]);
+      this.updateHistory([record]);
+    });
   }
 
   /**
@@ -82,7 +81,7 @@ export class Editor {
   getSharedStyle<T extends PropertyPath<StyleState>>(path: T) {
     const shapes = this.getSelectedShapes();
     if (!shapes.length) return null;
-    const allSame = shapes.every((shape) => shape[path] === shapes[0][path]);
+    const allSame = shapes.every((shape: Shape) => shape[path] === shapes[0][path]);
     if (!allSame) return null;
     return shapes[0][path];
   }
@@ -97,7 +96,7 @@ export class Editor {
       if (!shapes.length) return;
 
       const updates = shapes
-        .map((shape) => ({
+        .map((shape: Shape) => ({
           ...shape,
           [path]: value,
         }))
@@ -115,10 +114,8 @@ export class Editor {
   }
 
   // 트랜잭션 실행
-  run<T>(fn: () => T, options: { keepRedoStack: boolean } = { keepRedoStack: false }): T {
-    const { keepRedoStack } = options;
+  run<T>(fn: () => T): T {
     // 중첩 run은 그냥 실행 (최상위 run에서만 히스토리 기록)
-    // 히스토리 기록 여부가 false인 경우 히스토리 기록 안함
     if (this.isInTransaction()) {
       return fn();
     }
@@ -137,37 +134,81 @@ export class Editor {
     }
   }
 
-  // Shape API (내부적으로 매니저에 위임)
-  createShape(shape: Omit<Shape, 'id'>): string {
-    return this.run(() => this.shapeManager.createShape(shape));
+  // Shape API (새로운 아키텍처)
+  createShape(shape: Omit<Shape, 'id'>): Shape {
+    return this.createShapes([shape])[0];
   }
 
-  createShapes(shapes: Omit<Shape, 'id'>[]): string[] {
-    return this.run(() => this.shapeManager.createShapes(shapes));
+  createShapes(shapes: Omit<Shape, 'id'>[]): Shape[] {
+    return this.run(() => {
+      const records: StateRecord[] = [];
+      const createdShapes: Shape[] = [];
+
+      for (const shape of shapes) {
+        const createdShape = this.shapeManager.createShape(shape);
+        createdShapes.push(createdShape);
+        records.push(this.store.createRecord('added', `shapes.${createdShape.id}`, createdShape));
+      }
+
+      // Store에 반영 및 History 업데이트
+      this.store.put(records);
+      this.updateHistory(records);
+
+      return createdShapes;
+    });
   }
 
-  updateShape(shape: Partial<Shape> & { id: string }): void {
-    return this.run(() => this.shapeManager.updateShape(shape));
+  updateShape(shape: Partial<Shape>): Shape {
+    return this.updateShapes([shape])[0];
   }
 
-  updateShapes(shapes: Shape[]): void {
-    return this.run(() => this.shapeManager.updateShapes(shapes));
+  updateShapes(shapes: Partial<Shape>[]): Shape[] {
+    return this.run(() => {
+      // Record 배열 생성
+      const records: StateRecord[] = [];
+      const updatedShapes: Shape[] = [];
+
+      for (const shape of shapes) {
+        const currentShape = this.getShape(shape.id!);
+        if (!currentShape) continue;
+        const updatedShape = this.shapeManager.updateShape(currentShape, shape);
+        updatedShapes.push(updatedShape);
+        records.push(this.store.createRecord('updated', `shapes.${updatedShape.id}`, updatedShape));
+      }
+
+      // Store 및 History
+      this.store.put(records);
+      this.updateHistory(records);
+
+      return updatedShapes;
+    });
   }
 
   removeShape(id: string): void {
-    return this.run(() => this.shapeManager.removeShape(id));
+    return this.removeShapes([id]);
   }
 
   removeShapes(ids: string[]): void {
-    return this.run(() => this.shapeManager.removeShapes(ids));
+    return this.run(() => {
+      const records: StateRecord[] = [];
+
+      for (const id of ids) {
+        const shape = this.getShape(id);
+        if (!shape) continue;
+        records.push(this.store.createRecord('removed', `shapes.${shape.id}`, shape));
+      }
+
+      this.store.put(records);
+      this.updateHistory(records);
+    });
   }
 
   getShape(id: string): Shape {
-    return this.getState(`shapes.${id}`);
+    return this.getState(`shapes.${id}`) as Shape;
   }
 
-  getShapeNode<T extends Konva.Shape>(id: string): T | null {
-    return this.shapeManager.getShapeNode<T>(id);
+  getShapeNode(id: string): Konva.Shape {
+    return this.shapeManager.getShapeNode(id);
   }
 
   // Tool API
@@ -177,33 +218,56 @@ export class Editor {
   }
 
   getCurrentTool(): string {
-    return this.store.get('tool.current');
+    return this.store.get('tool.current') as string;
   }
 
   // History API
   undo(): void {
-    this.hisotryManager.undo();
+    const records = this.hisotryManager.undo();
+    if (!records) return;
+
+    // Record를 적용하고 Manager 동기화
+    this.store.put(records);
   }
 
   redo(): void {
-    this.hisotryManager.redo();
+    const records = this.hisotryManager.redo();
+    if (!records) return;
+
+    // Record를 적용하고 Manager 동기화
+    this.store.put(records);
+  }
+
+  /**
+   * Record 배열을 히스토리에 업데이트
+   * @param records Record 배열
+   */
+  updateHistory(records: StateRecord[]): void {
+    if (this.transactionManager.isActive()) {
+      this.transactionManager.add(records);
+    } else {
+      this.hisotryManager.record(records);
+    }
   }
 
   // Transaction API
   isInTransaction(): boolean {
-    return this.transactionManager.isInTransaction();
+    return this.transactionManager.isActive();
   }
 
   startTransaction(): void {
-    this.transactionManager.startTransaction();
+    this.transactionManager.start();
   }
 
   commitTransaction(): void {
-    this.transactionManager.commitTransaction();
+    const records = this.transactionManager.commit();
+    if (records) {
+      this.hisotryManager.record(records);
+    }
   }
 
   cancelTransaction(): void {
-    this.transactionManager.cancelTransaction();
+    this.transactionManager.rollback();
   }
 }
 

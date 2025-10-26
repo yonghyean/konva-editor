@@ -17,7 +17,7 @@ export function ActionsProvider({ children }: ActionsProviderProps) {
         label: 'undo',
         iconName: 'undo-2',
         onSelect: () => {
-          editor.hisotryManager.undo();
+          editor.undo();
         },
       },
       {
@@ -25,7 +25,7 @@ export function ActionsProvider({ children }: ActionsProviderProps) {
         label: 'redo',
         iconName: 'redo-2',
         onSelect: () => {
-          editor.hisotryManager.redo();
+          editor.redo();
         },
       },
     ];

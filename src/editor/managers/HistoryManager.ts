@@ -1,44 +1,23 @@
 import type { Editor } from '..';
-import { diff } from 'just-diff';
-import type { EditorState } from '../state';
-import { get } from 'lodash-es';
-
-type Operation = 'add' | 'replace' | 'remove';
-
-interface Patch {
-  op: Operation;
-  path: Array<string | number>;
-  value: any;
-}
-interface HistoryState {
-  patches: Patch[];
-  inversePatches: Patch[];
-}
+import type { Record as StateRecord } from '../types/record';
 
 export class HistoryManager {
   editor: Editor;
-  private undoStack: HistoryState[] = [];
-  private redoStack: HistoryState[] = [];
+  private undoStack: StateRecord[][] = [];
+  private redoStack: StateRecord[][] = [];
 
   constructor(editor: Editor) {
     this.editor = editor;
   }
 
-  record(
-    prevState: EditorState,
-    nextState: EditorState,
-    options: { keepRedoStack: boolean } = { keepRedoStack: false },
-  ) {
-    const diff = this.diff(prevState, nextState);
-    if (diff.patches.length === 0) return;
-    this.undoStack.push(diff);
-    if (!options.keepRedoStack) {
-      this.redoStack = [];
-    }
-  }
+  /**
+   * Record 배열을 히스토리에 기록
+   * @param records Record 배열
+   */
+  record(records: StateRecord[]): void {
+    if (records.length === 0) return;
 
-  pushState(state: HistoryState) {
-    this.undoStack.push(state);
+    this.undoStack.push(records);
     this.redoStack = [];
   }
 
@@ -46,53 +25,60 @@ export class HistoryManager {
     return this.undoStack.length > 0;
   }
 
-  undo() {
-    const entry = this.undoStack.pop();
-    if (!entry) return;
+  /**
+   * undo 실행 - 역방향 Record 배열 반환
+   * @returns 역방향 Record 배열 또는 null
+   */
+  undo(): StateRecord[] | null {
+    const records = this.undoStack.pop();
+    if (!records) return null;
 
-    this.applyPatches(entry.inversePatches);
-    this.redoStack.push(entry);
-    console.log('undo stack', this.undoStack);
+    // Record를 역순으로 하고 각각을 역방향으로 변환
+    const reversedRecords = records
+      .slice()
+      .reverse()
+      .map((record) => this.reverseRecord(record));
+
+    this.redoStack.push(records);
+    return reversedRecords;
   }
 
   canRedo(): boolean {
     return this.redoStack.length > 0;
   }
 
-  redo() {
-    const entry = this.redoStack.pop();
-    if (!entry) return;
+  /**
+   * redo 실행 - 정방향 Record 배열 반환
+   * @returns 정방향 Record 배열 또는 null
+   */
+  redo(): StateRecord[] | null {
+    const records = this.redoStack.pop();
+    if (!records) return null;
 
-    this.applyPatches(entry.patches);
-    this.undoStack.push(entry);
-    console.log('redo stack', this.redoStack);
+    this.undoStack.push(records);
+    return records;
   }
 
-  clear() {
+  clear(): void {
     this.undoStack = [];
     this.redoStack = [];
   }
 
-  private diff(prev: EditorState, next: EditorState) {
-    const delta = diff(prev, next);
-    // inversePatches는 prev에서 next로 변경된 부분을 저장
-    return delta.reduce(
-      (acc, patch) => {
-        acc.patches.push(patch);
-        acc.inversePatches.push({
-          op: patch.op === 'add' ? 'remove' : patch.op === 'remove' ? 'add' : patch.op,
-          path: patch.path,
-          value: get(prev, patch.path),
-        });
-        return acc;
-      },
-      { patches: [] as Patch[], inversePatches: [] as Patch[] },
-    );
-  }
-
-  private applyPatches(patches: Patch[]): void {
-    for (const patch of patches) {
-      this.editor.setState(patch.path.join('.') as never, patch.value);
+  /**
+   * Record를 역방향으로 변환
+   * @param record 원본 Record
+   * @returns 역방향 Record
+   */
+  private reverseRecord(record: StateRecord): StateRecord {
+    switch (record.type) {
+      case 'added':
+        return { type: 'removed', path: record.path, value: record.value };
+      case 'updated':
+        return { type: 'updated', path: record.path, from: record.to, to: record.from };
+      case 'removed':
+        return { type: 'added', path: record.path, value: record.value };
+      default:
+        throw new Error(`Unknown record type: ${(record as StateRecord).type}`);
     }
   }
 }
