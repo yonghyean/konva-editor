@@ -24,7 +24,7 @@ export function useStyles() {
 export function useSharedStyle<TPath extends StylePath>(path: TPath) {
   const editor = useEditor();
   const { onValueChange } = useStyles();
-  const configValue = useEditorValue(`style.${path}`, () => editor.getState(`style.${path}`));
+  const configValue = useEditorValue(`style.${path}`, () => editor.getStyle(path));
   const sharedValue = useEditorValue('selection.ids', () => editor.getSharedStyle(path));
 
   // TODO: 내부 상태를 사용하지 않고 최신 값을 설정할 수 있는 방법 필요

@@ -13,7 +13,7 @@ export abstract class BaseShapeTool extends BaseTool {
 
   onPointerDown() {
     this.state = 'drawing';
-    const styleState = this.editor.getState('style');
+    const styleState = this.editor.getStyle();
     const pointer = this.editor.canvas.stage.getPointerPosition();
 
     if (!pointer) return;

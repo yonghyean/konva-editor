@@ -1,7 +1,6 @@
-import Konva from 'konva';
 import type { Editor } from '..';
 import { BaseShapeTool } from './BaseShapeTool';
-import type { Shape } from '../state';
+import type { Shape, StyleState } from '../state';
 
 export class RectTool extends BaseShapeTool {
   name = 'rect';
@@ -10,14 +9,14 @@ export class RectTool extends BaseShapeTool {
     super(editor);
   }
 
-  protected createInitialShape(pointer: { x: number; y: number }, styleState: any): Shape {
+  protected createInitialShape(pointer: { x: number; y: number }, styleState: StyleState): Shape {
     return this.editor.createShape({
       className: 'Rect',
       x: pointer.x,
       y: pointer.y,
       width: 0,
       height: 0,
-      fill: styleState.fillColor,
+      fill: styleState.fill,
       stroke: styleState.stroke,
       strokeWidth: styleState.strokeWidth,
       opacity: styleState.opacity,

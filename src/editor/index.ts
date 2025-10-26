@@ -6,7 +6,7 @@ import { ShapeManager } from './managers/ShapeManager';
 import { ToolManager } from './managers/ToolManager';
 import { TransactionManager } from './managers/TransactionManager';
 import { Store, type PathValue, type PropertyPath } from './store/Store';
-import type { EditorState, Shape, StyleState } from './state';
+import type { Shape, StyleState } from './state';
 import type { Record as StateRecord } from './types/record';
 import { Diamond } from './shapes/Diamond';
 
@@ -48,31 +48,25 @@ export class Editor {
     this.canvas.stage.on('pointerout', this.toolManager.handlePointerOut.bind(this.toolManager));
   }
 
-  // store 업데이트 (내부용)
-  setState<T extends PropertyPath<EditorState>>(path: T, value?: PathValue<EditorState, T>): void {
-    this.store.set(path, value);
-    this.store.emit(path);
-  }
-
-  getState(): EditorState;
-  getState<T extends PropertyPath<EditorState>>(path: T): PathValue<EditorState, T>;
-  getState<T extends PropertyPath<EditorState>>(path?: T): PathValue<EditorState, T> | EditorState {
-    if (!path) return this.store.get();
-    return this.store.get(path);
-  }
-
   getSelectedShapes() {
-    const ids = this.getState('selection.ids') as string[];
+    const ids = this.store.get('selection.ids') as string[];
     return ids.map((id: string) => this.getShape(id));
   }
 
   setSelectedShapes(ids: string[]) {
     this.run(() => {
-      // 1. Store 업데이트
+      // 선택된 shapes의 id 배열 업데이트
       const record = this.store.createRecord('updated', 'selection.ids', ids);
       this.store.put([record]);
       this.updateHistory([record]);
     });
+  }
+
+  public getStyle(): StyleState;
+  public getStyle<T extends PropertyPath<StyleState>>(path: T): PathValue<StyleState, T>;
+  getStyle<T extends PropertyPath<StyleState>>(path?: T) {
+    if (!path) return this.store.get('style');
+    return this.store.get(`style.${path}`);
   }
 
   /**
@@ -86,31 +80,41 @@ export class Editor {
     return shapes[0][path];
   }
 
+  /**
+   * 선택된 shapes의 스타일을 설정합니다.
+   * @param path 스타일 경로 (예: 'fill', 'stroke', 'strokeWidth', 'strokeColor')
+   * @param value 스타일 값
+   */
   setStyleForSelectedShapes<T extends PropertyPath<StyleState>>(path: T, value: PathValue<StyleState, T>) {
     const shapes = this.getSelectedShapes();
 
     this.run(() => {
-      const stylePath = `style.${path}` as PropertyPath<EditorState>;
-      this.setState(stylePath, value as PathValue<EditorState, typeof stylePath>);
-
-      if (!shapes.length) return;
-
-      const updates = shapes
-        .map((shape: Shape) => ({
-          ...shape,
-          [path]: value,
-        }))
-        .filter((shape): shape is Shape => Boolean(shape));
-
-      if (updates.length) {
-        this.updateShapes(updates);
+      const records: StateRecord[] = [];
+      // 선택된 shapes의 스타일을 업데이트합니다.
+      for (const shape of shapes) {
+        records.push(this.store.createRecord('updated', `shapes.${shape.id}.${path}`, value));
       }
+
+      // Store에 반영 및 History 업데이트
+      this.store.put(records);
+      this.updateHistory(records);
     });
   }
 
+  /**
+   * 다음 도형에 적용할 스타일 업데이트
+   * @param path 스타일 경로 (예: 'fill', 'stroke', 'strokeWidth', 'strokeColor')
+   * @param value 스타일 값
+   */
   setStyleForNextShapes<T extends PropertyPath<StyleState>>(path: T, value: PathValue<StyleState, T>) {
-    const stylePath = `style.${path}` as PropertyPath<EditorState>;
-    this.setState(stylePath, value as PathValue<EditorState, typeof stylePath>);
+    this.run(() => {
+      // 스타일 업데이트 Record 생성
+      const record = this.store.createRecord('updated', `style.${path}`, value);
+
+      // Store에 반영 및 History 업데이트
+      this.store.put([record]);
+      this.updateHistory([record]);
+    });
   }
 
   // 트랜잭션 실행
@@ -204,7 +208,7 @@ export class Editor {
   }
 
   getShape(id: string): Shape {
-    return this.getState(`shapes.${id}`) as Shape;
+    return this.store.get(`shapes.${id}`) as Shape;
   }
 
   getShapeNode(id: string): Konva.Shape {
@@ -214,7 +218,8 @@ export class Editor {
   // Tool API
   setCurrentTool(tool: string): void {
     this.toolManager.changeTool(tool);
-    this.setState('tool.current', tool);
+    const record = this.store.createRecord('updated', 'tool.current', tool);
+    this.store.put([record]);
   }
 
   getCurrentTool(): string {
