@@ -21,10 +21,10 @@ export function StylePannel() {
           title="선 두께"
           path="strokeWidth"
           items={[
-            { value: '2', label: '2px' },
-            { value: '4', label: '4px' },
-            { value: '8', label: '8px' },
-            { value: '10', label: '10px' },
+            { value: 2, label: '2px' },
+            { value: 4, label: '4px' },
+            { value: 8, label: '8px' },
+            { value: 10, label: '10px' },
           ]}
         />
         <StylePannelSlider
@@ -43,7 +43,7 @@ export function StylePannel() {
 interface StylePannelButtonPickerProps {
   title: string;
   path: StylePath;
-  items: Array<{ value: string; label: string; iconName?: IconName }>;
+  items: Array<{ value: string | number; label: string; iconName?: IconName }>;
 }
 
 function StylePannelButtonPicker({ title, path, items }: StylePannelButtonPickerProps) {
