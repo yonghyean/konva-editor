@@ -154,10 +154,9 @@ export class Store<
   put(records: StateRecord[]): void {
     for (const record of records) {
       this.apply(record);
-
-      const affectedPaths = new Set(records.map((r) => r.path));
-      affectedPaths.forEach((path) => this.emit(path as TPath));
     }
+    const affectedPaths = new Set(records.map((r) => r.path));
+    affectedPaths.forEach((path) => this.emit(path as TPath));
   }
 
   /**
