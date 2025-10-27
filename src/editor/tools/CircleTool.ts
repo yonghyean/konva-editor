@@ -1,5 +1,5 @@
 import type { Editor } from '..';
-import type { StyleState } from '../state';
+import type { Shape, StyleState } from '../state';
 import { BaseShapeTool } from './BaseShapeTool';
 
 export class CircleTool extends BaseShapeTool {
@@ -9,7 +9,7 @@ export class CircleTool extends BaseShapeTool {
     super(editor);
   }
 
-  protected createInitialShape(pointer: { x: number; y: number }, styleState: StyleState): string {
+  protected createInitialShape(pointer: { x: number; y: number }, styleState: StyleState): Shape {
     return this.editor.createShape({
       className: 'Circle',
       x: pointer.x,
@@ -25,7 +25,7 @@ export class CircleTool extends BaseShapeTool {
   }
 
   protected updateShapeGeometry(startPoint: { x: number; y: number }, currentPoint: { x: number; y: number }): void {
-    if (!this.shapeId) return;
+    if (!this.shape) return;
 
     const x = Math.min(startPoint.x, currentPoint.x);
     const y = Math.min(startPoint.y, currentPoint.y);
@@ -35,7 +35,7 @@ export class CircleTool extends BaseShapeTool {
     const radius = Math.min(width, height) / 2;
 
     this.editor.updateShape({
-      id: this.shapeId,
+      id: this.shape.id,
       x: x + radius,
       y: y + radius,
       radius,

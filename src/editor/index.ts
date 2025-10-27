@@ -48,6 +48,10 @@ export class Editor {
     this.canvas.stage.on('pointerout', this.toolManager.handlePointerOut.bind(this.toolManager));
   }
 
+  getShapes() {
+    return Object.values(this.store.get('shapes'));
+  }
+
   getSelectedShapes() {
     const ids = this.store.get('selection.ids') as string[];
     return ids.map((id: string) => this.getShape(id));

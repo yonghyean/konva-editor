@@ -1,7 +1,6 @@
 import Konva from 'konva';
 import type { Editor } from '..';
 import { BaseTool } from './Tool';
-import { produce } from 'immer';
 
 const PREVIEW_OPACITY = 0.3;
 
@@ -16,14 +15,15 @@ export class EraserTool extends BaseTool {
 
     this.targetIds = new Set();
 
-    // this.editor.shapeManager.createGroup(this.group.getChildren().map((child) => child.toJSON()));
     this.group = new Konva.Group({
       opacity: PREVIEW_OPACITY,
     });
+
     this.editor.canvas.topLayer.add(this.group);
   }
 
   onPointerDown() {
+    this.editor.startTransaction();
     this.state = 'erasing';
   }
 
@@ -40,9 +40,8 @@ export class EraserTool extends BaseTool {
   onPointerUp() {
     this.state = 'idle';
 
-    this.editor.run(() => {
-      this.editor.removeShapes(this.group.getChildren().map((child) => child.id()));
-    });
+    this.editor.removeShapes(this.group.getChildren().map((child) => child.id()));
+    this.editor.commitTransaction();
     this.group.removeChildren();
   }
 }

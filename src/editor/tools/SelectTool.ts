@@ -81,11 +81,11 @@ export class SelectTool extends BaseTool {
     });
 
     const box = this.selectionBox.getClientRect();
-    const shapes = this.editor.getState('shapes');
+    const shapes = this.editor.getShapes();
     const selectedIds: string[] = [];
 
     // 선택 박스와 교차하는 도형 찾기
-    Object.values(shapes).forEach((shape) => {
+    shapes.forEach((shape) => {
       const shapeNode = this.editor.getShapeNode(shape.id);
       if (!shapeNode) return;
       const intersected = Konva.Util.haveIntersection(box, shapeNode.getClientRect());

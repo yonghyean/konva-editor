@@ -14,7 +14,7 @@ export class BrushTool extends BaseTool {
 
   onPointerDown() {
     this.state = 'drawing';
-    const styleState = this.editor.getState('style');
+    const styleState = this.editor.getStyle();
     const pointer = this.editor.canvas.stage.getPointerPosition();
     const initialPoints = pointer ? [pointer.x, pointer.y] : [];
 
