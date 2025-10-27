@@ -19,25 +19,27 @@ export class CircleTool extends BaseShapeTool {
       stroke: styleState.stroke,
       strokeWidth: styleState.strokeWidth,
       opacity: styleState.opacity,
-      originX: 'center',
-      originY: 'center',
+      offsetX: 0,
+      offsetY: 0,
     });
   }
 
   protected updateShapeGeometry(startPoint: { x: number; y: number }, currentPoint: { x: number; y: number }): void {
     if (!this.shape) return;
 
-    const x = Math.min(startPoint.x, currentPoint.x);
-    const y = Math.min(startPoint.y, currentPoint.y);
-    const width = Math.abs(currentPoint.x - startPoint.x);
-    const height = Math.abs(currentPoint.y - startPoint.y);
+    const dw = currentPoint.x - startPoint.x;
+    const dh = currentPoint.y - startPoint.y;
+    const x = startPoint.x + dw / 2;
+    const y = startPoint.y + dh / 2;
+    const width = Math.abs(dw);
+    const height = Math.abs(dh);
 
-    const radius = Math.min(width, height) / 2;
+    const radius = Math.max(width, height) / 2;
 
     this.editor.updateShape({
       id: this.shape.id,
-      x: x + radius,
-      y: y + radius,
+      x,
+      y,
       radius,
     });
   }
