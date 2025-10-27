@@ -20,7 +20,20 @@ export class ShapeManager {
   }
 
   createShape(shape: Omit<Shape, 'id'>): Shape {
-    const createdShape = { id: this.generateId(), ...shape } as Shape;
+    const createdShape = {
+      id: this.generateId(),
+      className: shape.className,
+      scaleX: shape.scaleX || 1,
+      scaleY: shape.scaleY || 1,
+      rotation: shape.rotation || 0,
+      x: shape.x,
+      y: shape.y,
+      offsetX: shape.offsetX,
+      offsetY: shape.offsetY,
+      opacity: shape.opacity,
+      visible: shape.visible,
+      ...shape,
+    } as Shape;
     return createdShape;
   }
 

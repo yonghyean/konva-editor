@@ -46,6 +46,7 @@ export class SelectionManager {
     if (addedIds.length > 0) {
       addedIds.forEach((id) => {
         const shape = this.editor.getShapeNode(id);
+
         if (!shape) return;
         shape.moveTo(this.selectionGroup);
       });
@@ -60,8 +61,7 @@ export class SelectionManager {
   }
 
   private handleTransformStart() {
-    if (!this.transformer) return;
-
+    if (!this.transformer || !this.selectionGroup) return;
     this.editor.startTransaction();
   }
 
@@ -70,28 +70,19 @@ export class SelectionManager {
    */
   private handleTransformEnd() {
     if (!this.transformer || !this.selectionGroup) return;
-
-    const children = this.selectionGroup.getChildren();
-
-    const updates = children
-      .filter((child) => child.id() !== null && child.id() !== undefined)
-      .map((child) => {
+    try {
+      this.selectionGroup.getChildren().forEach((child) => {
         // child의 absoluteTransform을 직접 계산 (group 내에서의 최종 절대 위치)
         const absoluteTransform = child.getAbsoluteTransform();
         const decomposed = absoluteTransform.decompose();
 
         // 현재 shape의 className을 가져와서 Shape 타입에 맞게 구성
         const currentShape = this.editor.getShape(child.id()!);
-
-        return {
-          id: child.id()!,
-          className: currentShape.className,
+        this.editor.updateShape({
+          id: currentShape.id,
           ...decomposed,
-        };
+        });
       });
-
-    try {
-      this.editor.updateShapes(updates);
 
       // selectionGroup transform 초기화
       this.selectionGroup.setAttrs({
