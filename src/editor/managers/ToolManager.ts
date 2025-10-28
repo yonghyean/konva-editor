@@ -7,7 +7,6 @@ import { SelectTool } from '../tools/SelectTool';
 import { RectTool } from '../tools/RectTool';
 import { CircleTool } from '../tools/CircleTool';
 import { DiamondTool } from '../tools/DiamondTool';
-import { produce } from 'immer';
 
 export class ToolManager {
   private editor: Editor;
