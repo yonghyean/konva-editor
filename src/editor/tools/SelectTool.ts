@@ -36,8 +36,19 @@ export class SelectTool extends BaseTool {
 
   onPointerDown(e: Konva.KonvaEventObject<PointerEvent>) {
     if (!this.selectionBox) return;
-    if (e.target.getParent()?.className === 'Transformer') return;
+    // e.target이 Shape이면 단일 선택
 
+    if (e.target instanceof Konva.Shape) {
+      // 현재 선택된 도형이 이미 선택되어 있으면 무시
+      if (this.editor.getSelectedShapes().some((shape) => shape.id === e.target.id())) return;
+
+      // 선택 추가
+      this.editor.setSelectedShapes([e.target.id()]);
+      return;
+    }
+
+    // Stage에서만 Group Selection 가능
+    if (e.target.nodeType !== 'Stage') return;
     this.state = 'dragging';
 
     this.lastPointerPosition = this.editor.canvas.stage.getPointerPosition() || { x: 0, y: 0 };
