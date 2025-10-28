@@ -58,12 +58,9 @@ export class Editor {
   }
 
   setSelectedShapes(ids: string[]) {
-    this.run(() => {
-      // 선택된 shapes의 id 배열 업데이트
-      const record = this.store.createRecord('updated', 'selection.ids', ids);
-      this.store.put([record]);
-      this.updateHistory([record]);
-    });
+    // 선택된 shapes의 id 배열 업데이트
+    const record = this.store.createRecord('updated', 'selection.ids', ids);
+    this.store.put([record]);
   }
 
   public getStyle(): StyleState;
