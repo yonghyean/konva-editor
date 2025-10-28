@@ -41,7 +41,8 @@ export class SelectTool extends BaseTool {
     if (e.target instanceof Konva.Shape) {
       // 현재 선택된 도형이 이미 선택되어 있으면 무시
       if (this.editor.getSelectedShapes().some((shape) => shape.id === e.target.id())) return;
-
+      // e.target이 유효한 도형인지 확인
+      if (!this.editor.getShape(e.target.id())) return;
       // 선택 추가
       this.editor.setSelectedShapes([e.target.id()]);
       return;
