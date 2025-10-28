@@ -106,7 +106,6 @@ export class SelectionManager {
     this.transformer = new Konva.Transformer({
       rotateEnabled: true,
       shouldOverdrawWholeArea: true,
-      ignoreStroke: true,
     });
 
     this.transformer.on('transformstart dragstart', () => {
