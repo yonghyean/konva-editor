@@ -16,6 +16,7 @@ export function ToolProvider({ children }: ToolProviderProps) {
         tool: 'select',
         label: 'select',
         iconName: 'mouse-pointer-2',
+        hotkey: 'v',
         onSelect: () => {
           editor.setCurrentTool('select');
         },
@@ -24,6 +25,7 @@ export function ToolProvider({ children }: ToolProviderProps) {
         tool: 'brush',
         label: 'brush',
         iconName: 'brush',
+        hotkey: 'b',
         onSelect: () => {
           editor.setCurrentTool('brush');
         },
@@ -32,6 +34,7 @@ export function ToolProvider({ children }: ToolProviderProps) {
         tool: 'eraser',
         label: 'eraser',
         iconName: 'eraser',
+        hotkey: 'e',
         onSelect: () => {
           editor.setCurrentTool('eraser');
         },
@@ -40,6 +43,7 @@ export function ToolProvider({ children }: ToolProviderProps) {
         tool: 'rect',
         label: 'rect',
         iconName: 'square',
+        hotkey: 'r',
         onSelect: () => {
           editor.setCurrentTool('rect');
         },
@@ -48,6 +52,7 @@ export function ToolProvider({ children }: ToolProviderProps) {
         tool: 'circle',
         label: 'circle',
         iconName: 'circle',
+        hotkey: 'o',
         onSelect: () => {
           editor.setCurrentTool('circle');
         },

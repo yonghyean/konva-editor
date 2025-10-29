@@ -10,7 +10,8 @@ export interface ToolItem {
   tool: string;
   label: string;
   iconName: IconName;
-  onSelect: (e: MouseEvent) => void;
+  hotkey?: string;
+  onSelect: (e?: MouseEvent | KeyboardEvent) => void;
 }
 
 export function useTools() {
